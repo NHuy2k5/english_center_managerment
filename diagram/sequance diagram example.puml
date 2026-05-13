@@ -1,0 +1,66 @@
+@startuml
+' Đừng xóa
+' Config về theme cho sequance diagram
+skinparam Style strictuml
+skinparam SequenceMessageAlignment center
+skinparam defaultFontName Helvetica
+skinparam defaultFontSize 13
+skinparam dpi 200
+skinparam shadowing false
+skinparam roundcorner 15
+
+skinparam ArrowColor #555555
+
+skinparam Participant {
+  BackgroundColor #ffffff
+  BorderColor #0a0a0a
+}
+
+skinparam Actor {
+  BackgroundColor #ffffff
+  BorderColor #0a0a0a
+}
+
+skinparam Boundary {
+  BackgroundColor #ffffff
+  BorderColor #0a0a0a
+}
+
+skinparam Control {
+  BackgroundColor #ffffff
+  BorderColor #0a0a0a
+}
+
+skinparam Entity {
+  BackgroundColor #ffffff
+  BorderColor #0a0a0a
+}
+
+' Khai báo actor, boundary, control, entity
+actor "Production Manager, Warehouse Manager,\nAccountant, Admin" as ACTOR
+Boundary ProductionOrderForm as FORM
+control OrderController as CONTROLLER
+entity Order
+activate ACTOR
+' Luồng tương tác giữa chúng theo dòng chảy
+ACTOR -> FORM ++ : accessProductionOrderManagement()
+FORM -> CONTROLLER ++ : checkAccessAndGetDefaultList()
+CONTROLLER -> Order ++ : fetchDefaultProductionOrders()
+Order --> CONTROLLER : return orderList
+CONTROLLER --> FORM : return listData
+FORM --> ACTOR : displayDefaultOrders()
+ACTOR -> FORM : clickSearchOrder()
+FORM --> ACTOR : showSearchInput()
+ACTOR -> FORM : inputOrderCode(orderCode)
+FORM -> CONTROLLER : processSearch(orderCode)
+CONTROLLER -> Order : findOrderByCode(orderCode)
+Order --> CONTROLLER -- : return searchResult
+alt Order found
+  CONTROLLER --> FORM : return orderData
+  FORM --> ACTOR : displaySearchResult(orderData)
+else Order not found or invalid code
+  CONTROLLER --> FORM -- : return notFoundError
+  FORM --> ACTOR -- : showError("Production order not found \nor invalid code entered")
+end alt
+deactivate ACTOR
+@enduml
