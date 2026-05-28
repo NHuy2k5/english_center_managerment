@@ -82,11 +82,11 @@ Trong đó:
 |`perf`|code cải tiến về mặt hiệu năng|
 |`chore`|những sửa đổi nhỏ nhặt không liên quan tới code|
 
-| fe/be |  Chú thích  |
-| :---: | :---------: |
-| `fe`  | `front end` |
-| `be`  | `back end`  |
-| `dia` |  `diagram`  |
+| fe/be/dia |  Chú thích  |
+| :-------: | :---------: |
+|   `fe`    | `front end` |
+|   `be`    | `back end`  |
+|   `dia`   |  `diagram`  |
 
 ```bash
 #Ví dụ về lệnh commit
