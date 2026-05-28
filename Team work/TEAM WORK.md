@@ -55,10 +55,10 @@ npm install
 
 4. Add và Commit change
 
-- Sau khi code được **chạy thử** mà **không thấy lỗi và đúng logic** thì sử dụng lệnh `add`.
+- Sau khi code được **chạy thử** mà **không thấy lỗi và đúng logic** thì sử dụng lệnh `add`
 
 ```bash
-git add .
+git add <folder hoac file là con cua folder english_center_managerment>
 ```
 
 - Sau khi thực hiện xong thì tiếp tục sử dụng lệnh commit. Sử dụng commit message rõ ràng và mô tả.
