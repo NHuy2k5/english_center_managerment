@@ -2,7 +2,7 @@
 
 ## Yêu cầu hệ thống
 
-1. node js bản lts,
+1. node js bản lts
 2. mariadb
 3. git
 
