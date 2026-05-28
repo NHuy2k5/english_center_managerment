@@ -65,7 +65,7 @@ git add .
 
 ```bash
 #commit message tổng quát:
-<type>: <fe/be> - <mô tả>
+<type>: <fe/be/dia> - <mô tả>
 <mô tả chi tiết>
 #Ví dụ về commit message:
 feat: fe - thêm header component
@@ -86,6 +86,7 @@ Trong đó:
 | :---: | :---------: |
 | `fe`  | `front end` |
 | `be`  | `back end`  |
+| `dia` |  `diagram`  |
 
 ```bash
 #Ví dụ về lệnh commit
