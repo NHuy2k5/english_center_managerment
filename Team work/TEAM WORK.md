@@ -117,7 +117,7 @@ git push origin <ten-nhanh>
 
 ```bash
 #B1: Quay về nhánh chính main
-git push checkout main
+git checkout main
 #B2: Kéo source code mới nhất từ githhub
 git pull origin main
 ```
