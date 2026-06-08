@@ -1,5 +1,5 @@
 // prettier-ignore
-const ItemComponent = ({image = "", title = "Lí do", descriptions = ["Mô tả lý do"],
+const ItemComponent = ({image = "", title = "Title", descriptions = ["Description 1"],
 className = "", isMoreDetails = false, linkMoreDetails = ""}) => {
   let isImageExist = image !== "";
   return (
@@ -8,7 +8,6 @@ className = "", isMoreDetails = false, linkMoreDetails = ""}) => {
         {isImageExist ? <img src={image} width={200} alt={title} /> : ""}
         <h2>{title}</h2>
         {descriptions.map((item, index) => {
-          console.log(`${index}:${item}`);
           return(
           <p key={index}>{item}</p>
         )})}
