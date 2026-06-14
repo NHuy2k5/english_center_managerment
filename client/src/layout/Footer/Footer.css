@@ -1,15 +1,41 @@
 .footer {
     background-color: #231f20;
     color: white;
+    font-size: 18px;
+    flex-shrink: 0; /* Đảm bảo footer không bị co lại */
+    padding: 58px 0;
+}
+.footer_container {
+    max-width: 1256px;
     display: grid;
-    grid-template-columns: repeat(3, minmax(200px, 1fr));
+    grid-template-columns: repeat(2, 1fr) 2fr auto;
+    padding: 20px;
+    gap: 60px;
+    margin: 0 auto;
 }
 .brand_footer, .about_footer, .contact_footer {
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 20px; /*khoảng cách giữa hàng và cột của grid, flex-box*/
     margin: 20px;
+    font-size: inherit;
 }
 .info {
     display: flex;
+    gap: 15px;
+}
+
+.about_footer a {
+    text-decoration: none;
+    color: white;
+    cursor: pointer;
+}
+
+.about_footer a:hover {
+    color: rgb(35, 56, 172);
+}
+
+.footer_container h2 {
+    font-size: 24px;
+    font-weight: 700;
 }

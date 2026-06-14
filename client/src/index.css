@@ -1,7 +1,22 @@
 :root {
     font-family: Arial, Helvetica, sans-serif;
 }
-
 * {
     margin: 0;
+    box-sizing: border-box;
+}
+#root {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+section {
+    flex: 1 0 auto;
+    /* Phần section giãn ra chiếm hết không gian trống */
+}
+
+svg {
+    flex-shrink: 0;
+    /* Tránh icon không bị co lại */
 }
