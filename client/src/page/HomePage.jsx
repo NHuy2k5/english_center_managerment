@@ -64,7 +64,7 @@ const HomePage = () => {
           />
         </div>
       </section>
-      <FooterComponent/>
+      <FooterComponent />
     </>
   );
 };

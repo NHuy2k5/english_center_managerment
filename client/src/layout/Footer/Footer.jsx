@@ -12,41 +12,45 @@ const FooterComponent = () => {
   return (
     <>
       <footer className="footer">
-        <div className="brand_footer">
-          <h2>MasterLangPro</h2>
-          <h3>Đừng để tiếng Anh cản ngăn bạn tiến bước</h3>
-          <p>
-            MasterLangPro là hệ sinh thái đào tạo tiếng Anh toàn diện, bao gồm
-            các chương trình: Tiếng Anh giao tiếp, luyện thi IELTS, luyện thi
-            Toeic và tiếng Anh cho từng độ tuổi.
-          </p>
-        </div>
-        <div className="about_footer">
-          <h2>Về MasterLangPro</h2>
-          <a href="#">Giới thiệu</a>
-          <a href="#">Khoá học</a>
-        </div>
-        <div className="contact_footer">
-          <h2>Học Tiếng Anh MasterLangPro</h2>
-          {addresses.map((value) => {
-            return (
-              <div className="info">
-                <HomeAlt width={20} height={20} color={"#ffffff"} />
-                <span>{value}</span>
-              </div>
-            );
-          })}
-          <div className="info">
-            <Phone color={"#ffffff"} />
-            <span>
-              {phones.map((value, index) => {
-                return index == phones.length - 1 ? value : value.concat(" - ");
-              })}
-            </span>
+        <div className="footer_container">
+          <div className="brand_footer">
+            <h2>MasterLangPro</h2>
+            <strong>Đừng để tiếng Anh cản ngăn bạn tiến bước</strong>
+            <p>
+              MasterLangPro là hệ sinh thái đào tạo tiếng Anh toàn diện, bao gồm
+              các chương trình: Tiếng Anh giao tiếp, luyện thi IELTS, luyện thi
+              Toeic và tiếng Anh cho từng độ tuổi.
+            </p>
           </div>
-          <div className="info">
-            <Envelope color={"#ffffff"} />
-            <span>{email}</span>
+          <div className="about_footer">
+            <h2>Về MasterLangPro</h2>
+            <a href="#">Giới thiệu</a>
+            <a href="#">Khoá học</a>
+          </div>
+          <div className="contact_footer">
+            <h2>Học Tiếng Anh MasterLangPro</h2>
+            {addresses.map((value) => {
+              return (
+                <div className="info">
+                  <HomeAlt width={20} height={20} color={"#ffffff"} />
+                  <span>{value}</span>
+                </div>
+              );
+            })}
+            <div className="info">
+              <Phone color={"#ffffff"} />
+              <span>
+                {phones.map((value, index) => {
+                  return index == phones.length - 1
+                    ? value
+                    : value.concat(" - ");
+                })}
+              </span>
+            </div>
+            <div className="info">
+              <Envelope color={"#ffffff"} />
+              <span>{email}</span>
+            </div>
           </div>
         </div>
       </footer>
