@@ -46,6 +46,31 @@ const CourseDetailsPage = () => {
       attendanceAbsent: 1,
       practice: { total: 22, done: 7, notDone: 12, locked: 3 },
       tests: { total: 31, done: 2, notDone: 24, locked: 5 },
+      description: {
+        "Đối tượng học viên": [
+          "Dành cho học sinh lớp 3, phù hợp cả học sinh mới bắt đầu và đã có nền tảng cơ bản.",
+          "Học sinh muốn cải thiện kỹ năng giao tiếp tiếng Anh và tự tin hơn khi trình bày."
+        ],
+        "Mục tiêu khóa học": [
+          "Xây dựng nền tảng ngôn ngữ qua nghe, nói, đọc, viết với chủ đề gần gũi học sinh.",
+          "Mở rộng vốn từ vựng theo từng chủ điểm và luyện phản xạ giao tiếp đơn giản."
+        ],
+        "Phương pháp giảng dạy": [
+          "Học qua trò chơi, bài hát, video, truyện tranh và hoạt động đóng vai.",
+          "Thực hành theo cặp, nhóm nhỏ để kích thích tương tác và phản xạ tiếng Anh."
+        ],
+        "Kết quả học tập và đánh giá": [
+          "Học sinh có thể giới thiệu bản thân, trả lời câu hỏi quen thuộc và viết đoạn ngắn theo mẫu.",
+          "Đánh giá định kỳ giúp nắm rõ tiến độ, và có báo cáo kết quả để phụ huynh theo dõi."
+        ],
+        "Giáo viên": [
+          "Giáo viên giàu kinh nghiệm, chuyên môn tiếng Anh trẻ em và theo sát tiến độ từng học sinh."
+        ],
+        "Tài liệu học tập": [
+          "Giáo trình phù hợp chương trình lớp 3, kèm phiếu bài tập và tài liệu ôn luyện.",
+          "Tài nguyên học trực tuyến hỗ trợ mở rộng sau mỗi buổi học."
+        ]
+      },
       progressCards: [
         { title: "Lớp học", value: "20 / 24", percent: Math.round((20 / 24) * 100) },
         { title: "Chuyên cần", value: "19 / 24", percent: Math.round((19 / 24) * 100) },
@@ -100,25 +125,46 @@ const CourseDetailsPage = () => {
 
           <Divider />
 
-          <Row gutter={[16, 16]}>
-            {course.progressCards.map((c, idx) => (
-              <Col key={idx} xs={24} sm={12} md={6}>
-                <Card hoverable>
-                  <Row align="middle">
-                    <Col flex="none" style={{ paddingRight: 12 }}>
-                      <Progress type="circle" percent={c.percent} width={84} />
-                    </Col>
-                    <Col flex="auto">
-                      <h4 style={{ margin: 0 }}>{c.value}</h4>
-                      <div style={{ color: "#888" }}>{c.title}</div>
-                    </Col>
-                  </Row>
-                </Card>
-              </Col>
-            ))}
-          </Row>
-
-          <Divider />
+          <Card
+            style={{ borderRadius: 18, marginBottom: 24 }}
+            bodyStyle={{ padding: 24 }}
+            title={
+              <div style={{ background: "#f5f7ff", padding: "10px 16px", borderRadius: 20, display: "inline-block" }}>
+                <span style={{ fontWeight: 700 }}>Mô tả khóa học</span>
+              </div>
+            }
+          >
+            <Row gutter={[16, 16]}>
+              {Object.entries(course.description).map(([title, items], idx) => {
+                const bgColors = ["#fff7e6", "#f6ffed", "#e6f7ff", "#fff0f6", "#f9f0ff", "#e8f5ff"];
+                const titleColors = ["#d48806", "#389e0d", "#096dd9", "#d4380d", "#722ed1", "#13c2c2"];
+                return (
+                  <Col key={title} xs={24} sm={12} md={8}>
+                    <Card
+                      hoverable
+                      size="small"
+                      style={{
+                        borderRadius: 18,
+                        minHeight: 200,
+                        background: bgColors[idx % bgColors.length],
+                        boxShadow: "0 12px 24px rgba(15, 23, 42, 0.08)",
+                        transition: "transform 0.2s ease, box-shadow 0.2s ease",
+                      }}
+                      bodyStyle={{ padding: 20 }}
+                    >
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
+                        <div style={{ fontWeight: 700, color: titleColors[idx % titleColors.length], fontSize: 15 }}>{title}</div>
+                        <div style={{ width: 10, height: 10, borderRadius: 10, background: titleColors[idx % titleColors.length] }} />
+                      </div>
+                      <p style={{ color: "#444", marginBottom: 0, lineHeight: 1.7, minHeight: 90 }}>
+                        {items.join(" ")}
+                      </p>
+                    </Card>
+                  </Col>
+                );
+              })}
+            </Row>
+          </Card>
 
           <Row gutter={24} style={{ alignItems: "stretch" }}>
             <Col xs={24} lg={16} style={{ display: "flex", flexDirection: "column", minHeight: 0 }}>
