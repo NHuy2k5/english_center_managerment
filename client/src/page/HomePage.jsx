@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ChevronDown,
@@ -154,12 +155,9 @@ function NavigationBar() {
         </div>
 
         <div className="flex items-center gap-3">
-          <a href="#" className="text-gray-700 hover:text-blue-600 transition-colors">
+          <Link to="/login" className="bg-blue-700 text-white px-6 py-2.5 rounded-full hover:bg-blue-800 transition-colors font-medium">
             Đăng nhập
-          </a>
-          <a href="#" className="bg-blue-700 text-white px-6 py-2.5 rounded-full hover:bg-blue-800 transition-colors font-medium">
-            Đăng ký
-          </a>
+          </Link>
         </div>
       </div>
     </nav>
@@ -651,67 +649,51 @@ function RiplMethodology() {
 }
 
 const courseDetails = {
-  ielts: {
-    title: "KHÓA HỌC IELTS",
+  tieuhoc: {
+    title: "TIẾNG ANH TIỂU HỌC",
     outcomes: [
-      "3.0 IELTS (Khoá IELTS Foundation A)",
-      "4.0 IELTS (Khoá IELTS Foundation B)",
-      "5.0 IELTS (Khoá IELTS Basic)",
-      "6.0 IELTS (Khoá IELTS Intermediate)",
-      "6.5 IELTS (Khoá IELTS Hi-Intermediate)",
-      "7.0/7.5+ IELTS (Khoá IELTS Advanced)"
+      "Phát âm chuẩn xác, tự nhiên",
+      "Tự tin giao tiếp cơ bản",
+      "Xây dựng vốn từ vựng nền tảng",
     ],
-    hours: "48h | 45h | 60h | 60h | 60h | 40h",
-    mockTest: "Thi thử trên máy tính cả 4 kỹ năng",
-    classSize: ["10", "15", "1-1"],
-    fee: "Từ 5.920.000 VNĐ - 17.000.000 VNĐ",
+    hours: "48h | 60h",
+    mockTest: "Đánh giá định kỳ theo format Cambridge",
+    classSize: ["10", "15"],
+    fee: "Từ 4.000.000 VNĐ",
   },
-  toeic: {
-    title: "KHÓA HỌC TOEIC",
+  thcs: {
+    title: "TIẾNG ANH THCS",
     outcomes: [
-      "450+ TOEIC (Foundation)",
-      "600+ TOEIC (Intermediate)",
-      "800+ TOEIC (Advanced)"
+      "Nắm chắc ngữ pháp nền tảng",
+      "Phát triển toàn diện 4 kỹ năng",
+      "Luyện thi chứng chỉ quốc tế",
     ],
-    hours: "40h | 45h | 50h",
+    hours: "60h | 72h",
     mockTest: "Thi thử định kỳ chuẩn format mới nhất",
-    classSize: ["15", "20", "1-1"],
-    fee: "Từ 3.500.000 VNĐ - 8.500.000 VNĐ",
+    classSize: ["15", "20"],
+    fee: "Từ 5.500.000 VNĐ",
   },
-  speedrunner: {
-    title: "IELTS SPEEDRUNNER",
+  thpt: {
+    title: "TIẾNG ANH THPT",
     outcomes: [
-      "Tăng 1.0 band score trong 2 tháng",
-      "6.5+ IELTS siêu tốc",
-      "Luyện đề chuyên sâu"
+      "Luyện thi đại học môn Tiếng Anh",
+      "Bứt phá điểm thi THPT Quốc Gia",
+      "Chuẩn bị nền tảng IELTS",
     ],
     hours: "80h học cường độ cao",
-    mockTest: "Thi thử hàng tuần 1-1 với chuyên gia",
-    classSize: ["5", "8", "1-1"],
-    fee: "Từ 15.000.000 VNĐ - 25.000.000 VNĐ",
+    mockTest: "Thi thử hàng tuần với chuyên gia",
+    classSize: ["10", "15"],
+    fee: "Từ 8.000.000 VNĐ",
   },
-  communication: {
-    title: "TIẾNG ANH CÔNG SỞ",
-    outcomes: [
-      "Giao tiếp tự tin trôi chảy",
-      "Viết email & Báo cáo chuyên nghiệp",
-      "Thuyết trình & Đàm phán"
-    ],
-    hours: "36h | 48h | 60h",
-    mockTest: "Đánh giá qua các tình huống thực tế",
-    classSize: ["8", "12", "1-1"],
-    fee: "Từ 4.800.000 VNĐ - 12.000.000 VNĐ",
-  }
 };
 
 function CoursesSection() {
-  const [activeCourse, setActiveCourse] = useState("ielts");
+  const [activeCourse, setActiveCourse] = useState("tieuhoc");
 
   const menuItems = [
-    { id: "ielts", label: "KHÓA HỌC IELTS" },
-    { id: "toeic", label: "Khóa học TOEIC" },
-    { id: "speedrunner", label: "IELTS SPEEDRUNNER" },
-    { id: "communication", label: "Tiếng anh Công sở" },
+    { id: "tieuhoc", label: "Tiếng Anh Tiểu học" },
+    { id: "thcs", label: "Tiếng Anh THCS" },
+    { id: "thpt", label: "Tiếng Anh THPT" },
   ];
 
   const selectedData = courseDetails[activeCourse];

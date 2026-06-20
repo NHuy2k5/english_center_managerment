@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Eye, EyeOff, Mail, Lock, ArrowRight } from "lucide-react";
 
@@ -8,6 +9,7 @@ export default function LoginPage({ onLoginSuccess }) {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -158,7 +160,7 @@ export default function LoginPage({ onLoginSuccess }) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.5 }}
-            onClick={() => onLoginSuccess && onLoginSuccess("home")}
+            onClick={() => navigate("/")}
             className="w-full border border-white/20 text-blue-200/80 hover:text-white hover:border-white/40 rounded-2xl py-3 text-sm font-medium transition-all duration-300 cursor-pointer bg-transparent"
           >
             ← Quay về trang chủ
