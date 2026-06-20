@@ -11,9 +11,6 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
-      User.belongsTo(models.Address, {
-        foreignKey: 'address_id'
-      });
       User.hasOne(models.GeneralUser, {
         foreignKey: 'id'
       })
@@ -84,9 +81,9 @@ module.exports = (sequelize, DataTypes) => {
       allowNULL: true,
       type: DataTypes.STRING
     },
-    address_id: {
+    address: {
       allowNull: true,
-      type: DataTypes.INTEGER
+      type: DataTypes.STRING(100)
     }
   }, {
     sequelize,
@@ -94,7 +91,8 @@ module.exports = (sequelize, DataTypes) => {
     tableName: 'users',
     timestamps: true,
     createdAt: 'created_at',
-    updatedAt: 'updated_at'
+    updatedAt: 'updated_at',
+    paranoid: true
   });
   return User;
 };

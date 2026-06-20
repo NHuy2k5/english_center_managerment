@@ -1,0 +1,1 @@
+// Chỉ có tài khoản có parent mới thực hiện được

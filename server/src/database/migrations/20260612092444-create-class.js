@@ -9,12 +9,11 @@ module.exports = {
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      total_students_registered: {
+      name: {
         allowNull: false,
-        type: Sequelize.INTEGER,
-        defaultValue: 0
+        type: Sequelize.STRING(50),
       },
-      total_students_dropped_out: {
+      total_students: {
         allowNull: false,
         type: Sequelize.INTEGER,
         defaultValue: 0
@@ -27,6 +26,11 @@ module.exports = {
           key: 'id'
         }
       },
+      status: {
+        type: Sequelize.STRING(20),
+        allowNull: false,
+        defaultValue: 'opened'
+      },
       created_at: {
         allowNull: false,
         type: Sequelize.DATE
@@ -36,8 +40,17 @@ module.exports = {
         type: Sequelize.DATE
       }
     });
+    await queryInterface.addConstraint('classes', {
+        fields: ['status'],
+        type: 'check',
+        name: 'chk_class_status',
+        where: {
+          status: ['opened', 'closed']
+        }
+    });
   },
   async down(queryInterface, Sequelize) {
+    await queryInterface.removeConstraint('classes', 'chk_class_status', {transaction: t});
     await queryInterface.dropTable('classes');
   }
 };

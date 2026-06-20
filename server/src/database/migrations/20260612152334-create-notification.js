@@ -39,8 +39,17 @@ module.exports = {
         type: Sequelize.DATE
       }
     });
+    await queryInterface.addConstraint('notifications', {
+      fields: ['type'],
+      type: 'check',
+      name: 'chk_notification_type',
+      where: {
+        type: ['general', 'lesson', 'tuition_fee', 'monthly_salary']
+      }
+    });
   },
   async down(queryInterface, Sequelize) {
+    await queryInterface.removeConstraint('notifications','chk_notification_type');
     await queryInterface.dropTable('notifications');
   }
 };

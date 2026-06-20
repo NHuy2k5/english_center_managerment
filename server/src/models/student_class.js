@@ -24,18 +24,22 @@ module.exports = (sequelize, DataTypes) => {
       primaryKey: true,
       type: DataTypes.INTEGER
     },
-    is_student_dropped_out: {
+    enrolled_at: {
+      type: DataTypes.DATE,
       allowNull: false,
-      type: DataTypes.BOOLEAN,
-      defaultValue: false
-    }
+    },
+    left_at: {
+      type: DataTypes.DATE,
+      allowNull: true,
+    },
   }, {
     sequelize,
     modelName: 'StudentClass',
     tableName: 'student_class',
     timestamps: true,
     createdAt: 'created_at',
-    updatedAt: 'updated_at'
+    updatedAt: 'updated_at',
+    paranoid: true
   });
   return StudentClass;
 };

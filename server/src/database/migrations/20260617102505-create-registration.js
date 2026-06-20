@@ -2,57 +2,48 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('lessons', {
+    await queryInterface.createTable('registrations', {
       id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      name: {
+      full_name: {
         allowNull: false,
         type: Sequelize.STRING(50)
       },
-      start: {
-        allowNull: false,
-        type: Sequelize.DATE
-      },
-      end: {
-        allowNull: false,
-        type: Sequelize.DATE
-      },
-      description: {
+      email: {
         allowNull: true,
-        type: Sequelize.STRING
+        type: Sequelize.STRING(100),
       },
-      listed_price: {
-        allowNull: false,
-        type: Sequelize.DECIMAL(15,2),
-        defaultValue: 0
+      phone: {
+        allowNULL: false,
+        type: Sequelize.STRING(20),
       },
-      class_id: {
-        allowNull: false,
+      address: {
+        allowNULL: false,
+        type: Sequelize.STRING(100)
+      },
+      category_course_id: {                
         type: Sequelize.INTEGER,
+        allowNull: false,
         references: {
-          model: 'classes',
+          model: 'category_courses',
           key: 'id'
         }
       },
-      address: {
-        allowNull: true,
-        type: Sequelize.STRING(100)
-      },
-      created_at: {
+      createdAt: {
         allowNull: false,
         type: Sequelize.DATE
       },
-      updated_at: {
+      updatedAt: {
         allowNull: false,
         type: Sequelize.DATE
       }
     });
   },
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('lessons');
+    await queryInterface.dropTable('registrations');
   }
 };

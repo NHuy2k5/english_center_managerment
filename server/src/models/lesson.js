@@ -21,9 +21,6 @@ module.exports = (sequelize, DataTypes) => {
       Lesson.hasMany(models.Assignment, {
         foreignKey: 'lesson_id'
       });
-      Lesson.belongsTo(models.Address, {
-        foreignKey: 'address_id'
-      });
     }
   }
   Lesson.init({
@@ -58,9 +55,9 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       type: DataTypes.INTEGER,
     },
-    address_id: {
+    address: {
       allowNull: true,
-      type: DataTypes.INTEGER,
+      type: DataTypes.STRING(100)
     },
   }, {
     sequelize,

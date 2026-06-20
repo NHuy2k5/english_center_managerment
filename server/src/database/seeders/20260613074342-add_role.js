@@ -29,11 +29,6 @@ module.exports = {
         name: 'parent',
         created_at: new Date(),
         updated_at: new Date()
-      },
-      {
-        name: 'general',
-        created_at: new Date(),
-        updated_at: new Date()
       }
     ], {});
   },

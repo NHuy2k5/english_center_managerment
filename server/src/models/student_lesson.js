@@ -35,7 +35,8 @@ module.exports = (sequelize, DataTypes) => {
     tableName: 'student_lesson',
     timestamps: true,
     createdAt: 'created_at',
-    updatedAt: 'updated_at'
+    updatedAt: 'updated_at',
+    paranoid: true
   });
   return StudentLesson;
 };
