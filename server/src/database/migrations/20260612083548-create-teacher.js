@@ -31,6 +31,11 @@ module.exports = {
         allowNULL: true,
         type: Sequelize.STRING
       },
+      status: {
+        type: Sequelize.STRING(20),
+        allowNull: false,
+        defaultValue: 'private'
+      },
       created_at: {
         allowNull: false,
         type: Sequelize.DATE
@@ -40,8 +45,17 @@ module.exports = {
         type: Sequelize.DATE
       }
     });
+    await queryInterface.addConstraint('teachers', {
+        fields: ['status'],
+        type: 'check',
+        name: 'chk_teacher_status',
+        where: {
+          status: ['private', 'public']
+        }
+      });
   },
   async down(queryInterface, Sequelize) {
+    await queryInterface.removeConstraint('teachers', 'chk_teacher_status');
     await queryInterface.dropTable('teachers');
   }
 };

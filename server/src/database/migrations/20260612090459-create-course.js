@@ -18,16 +18,6 @@ module.exports = {
         type: Sequelize.INTEGER,
         defaultValue: new Date().getFullYear()
       },
-      total_students_registered: {
-        allowNull: false,
-        type: Sequelize.INTEGER,
-        defaultValue: 0
-      },
-      total_students_dropped_out: {
-        allowNull: false,
-        type: Sequelize.INTEGER,
-        defaultValue: 0
-      },
       total_lessons: {
         allowNull: false,
         type: Sequelize.INTEGER,
@@ -36,6 +26,11 @@ module.exports = {
       listed_price: {
         allowNull: false,
         type: Sequelize.DECIMAL(15,2),
+        defaultValue: 0
+      },
+      discount: {
+        allowNull: false,
+        type: Sequelize.INTEGER,
         defaultValue: 0
       },
       description: {
@@ -58,6 +53,11 @@ module.exports = {
           key: 'id'
         }
       },
+      status: {
+        type: Sequelize.STRING(20),
+        allowNull: false,
+        defaultValue: 'private'
+      },
       created_at: {
         allowNull: false,
         type: Sequelize.DATE
@@ -67,8 +67,17 @@ module.exports = {
         type: Sequelize.DATE
       }
     });
+    await queryInterface.addConstraint('courses', {
+        fields: ['status'],
+        type: 'check',
+        name: 'chk_course_status',
+        where: {
+          status: ['private', 'public', 'closed']
+        }
+      });
   },
   async down(queryInterface, Sequelize) {
+    await queryInterface.removeConstraint('courses', 'chk_course_status');
     await queryInterface.dropTable('courses');
   }
 };

@@ -22,8 +22,18 @@ module.exports = {
         type: Sequelize.DATE
       }
     });
+    await queryInterface.addConstraint('roles', {
+      fields: ['name'],
+      type: 'check',
+      name: 'chk_role_name',
+      where: {
+        name: ['admin', 'student', 'teacher', 'parent']
+      }
+    });
+
   },
   async down(queryInterface, Sequelize) {
+    await queryInterface.removeConstraint('roles','chk_role_name');
     await queryInterface.dropTable('roles');
   }
 };

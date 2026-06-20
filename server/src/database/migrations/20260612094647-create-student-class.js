@@ -21,10 +21,13 @@ module.exports = {
           key: 'id'
         }
       },
-      is_student_dropped_out: {
+      enrolled_at: {
+        type: Sequelize.DATE,
         allowNull: false,
-        type: Sequelize.BOOLEAN,
-        defaultValue: false
+      },
+      left_at: {
+        type: Sequelize.DATE,
+        allowNull: true,
       },
       created_at: {
         allowNull: false,

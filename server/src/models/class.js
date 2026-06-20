@@ -37,19 +37,24 @@ module.exports = (sequelize, DataTypes) => {
       primaryKey: true,
       type: DataTypes.INTEGER
     },
-    total_students_registered: {
-      allowNull: false,
-      type: DataTypes.INTEGER,
-      defaultValue: 0
-    },
-    total_students_dropped_out: {
-      allowNull: false,
-      type: DataTypes.INTEGER,
-      defaultValue: 0
-    },
     course_id: {
       allowNull: true,
       type: DataTypes.INTEGER
+    },
+    // Tổng số học sinh trong lớp
+    total_students: {
+      allowNull: false,
+      type: DataTypes.INTEGER,
+      defaultValue: 0
+    },
+    name: {
+      allowNull: false,
+      type: DataTypes.STRING(50)
+    }, 
+    status:{
+      type: DataTypes.STRING(20),
+      allowNull: false,
+      defaultValue: 'opened'
     }
   }, {
     sequelize,

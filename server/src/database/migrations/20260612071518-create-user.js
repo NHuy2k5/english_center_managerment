@@ -48,13 +48,9 @@ module.exports = {
         allowNULL: true,
         type: Sequelize.STRING
       },
-      address_id: {
+      address: {
         allowNull: true,
-        type: Sequelize.INTEGER,
-        references: {
-          model: 'addresses',
-          key: 'id'
-        }
+        type: Sequelize.STRING(100)
       },
       created_at: {
         allowNull: false,
@@ -65,8 +61,17 @@ module.exports = {
         type: Sequelize.DATE
       }
     });
+    await queryInterface.addConstraint('users', {
+      fields: ['sex'],
+      type: 'check',
+      name: 'chk_user_sex',
+      where: {
+        sex: ['male', 'female', 'undefined']
+      }
+    });
   },
   async down(queryInterface, Sequelize) {
+    await queryInterface.removeConstraint('users','chk_user_sex');
     await queryInterface.dropTable('users');
   }
 };
