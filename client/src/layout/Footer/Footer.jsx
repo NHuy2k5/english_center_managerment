@@ -29,10 +29,14 @@ const FooterComponent = () => {
           </div>
           <div className="contact_footer">
             <h2>Học Tiếng Anh MasterLangPro</h2>
-            {addresses.map((value) => {
+            {addresses.map((value, index) => {
               return (
-                <div className="info">
-                  <HomeAlt width={20} height={20} color={"#ffffff"} />
+                <div className="info" key={index}>
+                  {index === 0 ? (
+                    <HomeAlt width={20} height={20} color={"#ffffff"} />
+                  ) : (
+                    <div style={{ width: 20, height: 20, flexShrink: 0 }} />
+                  )}
                   <span>{value}</span>
                 </div>
               );
