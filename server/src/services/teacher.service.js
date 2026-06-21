@@ -1,36 +1,75 @@
 const { Teacher,
+    MonthlyTeacherSalary,
+    TeacherClass,
+    Assignment,
     User,
     Role,
     UserRole,
-    MonthlyTeacherSalary,
-    Assignment,
     sequelize } = require("../models/index");
 const { hashPassword } = require("../utilities/hashing")
-const teacherInclude = [{
-    model: Teacher,
-    required: true
-}];
+const { transformTeacher } = require("../transformers/teacher.transformer");
+const query = (teacherQuery = {}) => {
+    const hasWhere = where => where && Object.keys(where).length > 0;
+    return {
+        distinct: true,
+        ...(teacherQuery.limit != null && { limit: teacherQuery.limit }),
+        ...(teacherQuery.offset != null && { offset: teacherQuery.offset }),
+        ...(teacherQuery.teacher?.attributes?.length && { attributes: teacherQuery.teacher.attributes }),
+        order: [
+            ...(teacherQuery.teacher?.order || []),
+            ...((teacherQuery.user?.order || []).map(order => [
+                { model: User, as: 'teacher_user' },
+                ...order
+            ]))
+        ],
+        ...(hasWhere(teacherQuery.teacher?.where) && {
+            where: teacherQuery.teacher.where
+        }),
+        include: [
+            {
+                model: User,
+                as: 'teacher_user',
+                required: true,
+                ...(teacherQuery.user?.attributes?.length ? { attributes: teacherQuery.user.attributes } : { attributes: { exclude: ['password'] } }),
+                ...(hasWhere(teacherQuery.user?.where) && {
+                    where: teacherQuery.user.where
+                })
+            }
+        ]
+    };
+}
 module.exports = {
-    // Lấy tài khoản học sinh
-    getTeachers: async ({ attributes, sort, order, where, limit, offset }) => {
-        const query = {
-            order: [[sort, order]],
-            where,
-            limit,
-            offset,
-            include: teacherInclude
-        };
-        if (attributes) {
-            query.attributes = attributes.filter(
-                attribute => attribute !== "password"
-            );
+    // Lấy tài khoản giáo viên
+    /*
+        Nếu không lấy parent_id
+        [{
+            id: ...,
+            user_name: ...,
+            ...
+        ]}
+        Teachers ban đầu return từ findAll
+        [{
+            id: ...,
+            teacher_user: {
+                id: ...,
+                full_name: ...
+                ...
+            }
+        }]
+    */
+    getTeachers: async (teacherQuery = {}) => {
+        let rows;
+        let count;
+        if (teacherQuery.limit != null) {
+            const result = await Teacher.findAndCountAll(query(teacherQuery));
+            rows = result.rows.map(transformTeacher);
+            count = result.count;
         } else {
-            query.attributes = {
-                exclude: ["password"]
-            };
+            rows = await Teacher.findAll(query(teacherQuery));
+            count = rows.length;
+            rows = rows.map(transformTeacher);
         }
-        const teachers = await User.findAndCountAll(query);
-        if (teachers.count === 0) {
+        if (count === 0) {
             return {
                 status: 404,
                 message: "Teachers not found"
@@ -38,18 +77,13 @@ module.exports = {
         }
         return {
             status: 200,
-            data: teachers.rows,
-            count: teachers.count,
+            data: rows,
+            count,
             message: "Teachers found"
         };
     },
     getTeacher: async (id) => {
-        const teacher = await User.findByPk(id, {
-            attributes: {
-                exclude: ["password"]
-            },
-            include: teacherInclude
-        })
+        const teacher = await Teacher.findByPk(id, query())
         if (!teacher) {
             return {
                 status: 404,
@@ -58,7 +92,7 @@ module.exports = {
         }
         return {
             status: 200,
-            data: teacher,
+            data: transformTeacher(teacher),
             message: "Teacher found"
         }
     },
@@ -103,25 +137,20 @@ module.exports = {
             // Thêm thông tin Teacher
             await Teacher.create({
                 id: user.id,
-                balance: data.balance || 0,
-                description: data.description??null,
-                thumbnail_link: data.thumbnail_link??null,
-                thumbnail_id: data.thumbnail_id??null,
-                status: data.status || "private",
+                balance: data.balance,
+                description: data.description ?? null,
+                thumbnail_link: data.thumbnail_link ?? null,
+                thumbnail_id: data.thumbnail_id ?? null,
+                status: data.status ?? 'private',
                 created_at: new Date(),
                 updated_at: new Date()
             }, { transaction: t });
             await t.commit();
-            const result = await User.findByPk(user.id, {
-                attributes: {
-                    exclude: ["password"]
-                },
-                include: teacherInclude
-            });
+            const result = await Teacher.findByPk(user.id, query());
 
             return {
                 status: 201,
-                data: result,
+                data: transformTeacher(result),
                 message: "Create success"
             };
         } catch (error) {
@@ -139,23 +168,8 @@ module.exports = {
         if (data.birthday) {
             data.birthday = new Date(data.birthday);
         }
-        const { description, thumbnail_link, thumbnail_id, balance, status, ...userData } = data;
+        const { balance, description, thumbnail_link, thumbnail_id, status, ...userData } = data;
         const teacherData = {};
-        if("description" in data){
-            teacherData.description = description
-        }
-        if("thumbnail_link" in data){
-            teacherData.thumbnail_link = thumbnail_link
-        }
-        if("thumbnail_id" in data) {
-            teacherData.thumbnail_id = thumbnail_id
-        }
-        if("balance" in data){
-            teacherData.balance = balance
-        }
-        if("status" in data){
-            teacherData.status = status
-        }
         const t = await sequelize.transaction();
         try {
             const teacher = await Teacher.findByPk(id, { transaction: t });
@@ -166,28 +180,38 @@ module.exports = {
                     message: "Teacher not found"
                 };
             };
-            await User.update(userData,
-                {
-                    where: { id },
-                    transaction: t
-                });
-            if (Object.keys(teacherData).length!==0) {
-                await Teacher.update(teacherData,
+            if (Object.keys(userData).length) {
+                await User.update(userData,
                     {
                         where: { id },
                         transaction: t
                     });
             };
+            if ("description" in data) {
+                teacherData.description = description;
+            }
+            if ("thumbnail_link" in data) {
+                teacherData.thumbnail_link = thumbnail_link;
+            };
+            if ("balance" in data) {
+                teacherData.balance = balance;
+            }
+            if ("thumbnail_id" in data) {
+                teacherData.thumbnail_id = thumbnail_id;
+            }
+            if ("status" in data) {
+                teacherData.status = status;
+            }
+            await Teacher.update(teacherData,
+                {
+                    where: { id },
+                    transaction: t
+                });
             await t.commit();
-            const result = await User.findByPk(id, {
-                attributes: {
-                    exclude: ["password"]
-                },
-                include: teacherInclude
-            });
+            const result = await Teacher.findByPk(id, query());
             return {
                 status: 200,
-                data: result,
+                data: transformTeacher(result),
                 message: "Update success"
             };
         } catch (error) {
@@ -209,19 +233,41 @@ module.exports = {
                     message: "Teacher not found"
                 };
             };
-            await MonthlyTeacherSalary.destroy({
-                where: {
-                    teacher_id: id
-                },
-                transaction: t
-            });
             await Assignment.destroy({
                 where: {
                     teacher_id: id
                 },
                 transaction: t
+            });
+            // Xóa giáo viên ở teacher_class, hàm trả về số lượng bản ghi bị xóa, nếu không có thì trả về 0
+            await TeacherClass.destroy({
+                where: {
+                    teacher_id: id
+                },
+                transaction: t
+            })
+            // Xóa giáo viên ở monthly_teacher_salary
+            await MonthlyTeacherSalary.destroy({
+                where: {
+                    user_id: id
+                },
+                transaction: t
             })
             // Xóa role teacher
+            const teacherRole = await Role.findOne({
+                where: {
+                    name: "teacher"
+                },
+                transaction: t
+            });
+
+            await UserRole.destroy({
+                where: {
+                    user_id: id,
+                    role_id: teacherRole.id
+                },
+                transaction: t
+            });
             await UserRole.destroy({
                 where: {
                     user_id: id
@@ -235,7 +281,7 @@ module.exports = {
                 },
                 transaction: t
             });
-            if(!status){
+            if (!status) {
                 throw new Error("Delete failed");
             }
             await t.commit();

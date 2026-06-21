@@ -12,9 +12,10 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       // define association here
       Teacher.belongsTo(models.User, {
-        foreignKey: 'id'
+        foreignKey: 'id',
+        as: 'teacher_user'
       });
-      Teacher.belongsToMany(models.Class, {
+      Teacher.belongsToMany(models.TeacherClass, {
         through: 'teacher_class',
         foreignKey: 'teacher_id'
       });
@@ -29,10 +30,52 @@ module.exports = (sequelize, DataTypes) => {
   Teacher.init({
     id: {
       allowNull: false,
+      autoIncrement: true,
       primaryKey: true,
-      type: DataTypes.INTEGER,
-      onDelete: 'CASCADE',
-      onUpdate: 'CASCADE'
+      type: DataTypes.INTEGER
+    },
+    user_name: {
+      allowNull: false,
+      type: DataTypes.STRING(50),
+      unique: true
+    },
+    password: {
+      allowNull: false,
+      type: DataTypes.STRING
+    },
+    full_name: {
+      allowNull: false,
+      type: DataTypes.STRING(50)
+    },
+    birthday: {
+      allowNull: true,
+      type: DataTypes.DATE
+    },
+    sex: {
+      allowNull: true,
+      type: DataTypes.STRING(10)
+    },
+    email: {
+      allowNull: true,
+      type: DataTypes.STRING(100),
+      unique: true
+    },
+    phone: {
+      allowNull: false,
+      type: DataTypes.STRING(20),
+      unique: true
+    },
+    avatar_link: {
+      allowNull: true,
+      type: DataTypes.STRING
+    },
+    avatar_id: {
+      allowNull: true,
+      type: DataTypes.STRING
+    },
+    address: {
+      allowNull: true,
+      type: DataTypes.STRING(100)
     },
     balance: {
       allowNull: false,
@@ -40,16 +83,28 @@ module.exports = (sequelize, DataTypes) => {
       defaultValue: 0
     },
     thumbnail_link: {
-      allowNULL: true,
+      allowNull: true,
       type: DataTypes.STRING
     },
     thumbnail_id: {
-      allowNULL: true,
+      allowNull: true,
       type: DataTypes.STRING
     },
     description: {
-      allowNULL: true,
-      type: DataTypes.STRING
+      allowNull: true,
+      type: DataTypes.JSON,
+      get() {
+        const value = this.getDataValue('description'); 
+        return value
+          ? JSON.parse(value)
+          : null;
+      },
+      set(value) {
+        this.setDataValue(
+          'description',
+          JSON.stringify(value)
+        );
+      }
     },
     status: {
       type: DataTypes.STRING(20),
