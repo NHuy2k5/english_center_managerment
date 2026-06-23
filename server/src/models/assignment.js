@@ -58,7 +58,8 @@ module.exports = (sequelize, DataTypes) => {
     tableName: 'assignments',
     timestamps: true,
     createdAt: 'created_at',
-    updatedAt: 'updated_at'
+    updatedAt: 'updated_at',
+    paranoid: true
   });
   return Assignment;
 };

@@ -49,7 +49,7 @@ module.exports = {
       type: 'check',
       name: 'chk_assignment_status',
       where: {
-        status: ['main_teach','substitute_teach', 'absence_from_teaching']
+        status: ['teaching']
       }
     });
   },

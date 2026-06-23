@@ -1,13 +1,9 @@
 exports.transformTeacher = (teacher) => {
     const data = teacher.toJSON();
+    const {teacher_user,...teacherData} = data;
      const result = {
-        id: data.id,
-        ...data.teacher_user,
-        balance: data.balance,
-        description: data.description,
-        thumbnail_link: data.thumbnail_link,
-        thumbnail_id: data.thumbnail_id,
-        status: data.status
+        ...teacherData,
+        ...teacher_user,
     };
     return result;
 };

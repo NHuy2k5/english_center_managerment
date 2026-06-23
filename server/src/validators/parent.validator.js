@@ -97,10 +97,8 @@ const updateParentSchema = object({
         avatar_link: string().url("Avatar link must be link url").nullable(),
         avatar_id: string().nullable(),
         balance: number().test('check-value', "The balance value must be greater than or equal to 0.", (value) => {
-            if (value === undefined) {
-                return true;
-            }
-            return value >= 0
+            return value === undefined || value >= 0
         })
     })
 })
+module.exports = {createParentSchema, updateParentSchema};

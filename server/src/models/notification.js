@@ -50,7 +50,8 @@ module.exports = (sequelize, DataTypes) => {
     tableName: 'notifications',
     timestamps: true,
     createdAt: 'created_at',
-    updatedAt: false
+    updatedAt: false,
+    paranoid: true
   });
   return Notification;
 };

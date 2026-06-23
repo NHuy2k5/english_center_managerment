@@ -1,1 +1,0 @@
-// Chỉ có tài khoản có student mới thực hiện được

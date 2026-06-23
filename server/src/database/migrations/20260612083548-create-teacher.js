@@ -20,16 +20,16 @@ module.exports = {
         defaultValue: 0
       },
       thumbnail_link: {
-        allowNULL: true,
+        allowNull: true,
         type: Sequelize.STRING
       },
       thumbnail_id: {
-        allowNULL: true,
+        allowNull: true,
         type: Sequelize.STRING
       },
       description: {
-        allowNULL: true,
-        type: Sequelize.STRING
+        allowNull: true,
+        type: Sequelize.TEXT
       },
       status: {
         type: Sequelize.STRING(20),

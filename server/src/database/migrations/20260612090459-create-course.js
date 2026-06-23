@@ -18,37 +18,22 @@ module.exports = {
         type: Sequelize.INTEGER,
         defaultValue: new Date().getFullYear()
       },
-      total_lessons: {
-        allowNull: false,
-        type: Sequelize.INTEGER,
-        defaultValue: 0
-      },
-      listed_price: {
-        allowNull: false,
-        type: Sequelize.DECIMAL(15,2),
-        defaultValue: 0
-      },
-      discount: {
-        allowNull: false,
-        type: Sequelize.INTEGER,
-        defaultValue: 0
-      },
       description: {
         allowNull: true,
         type: Sequelize.TEXT
       },
       thumbnail_link: {
-        allowNULL: true,
+        allowNull: true,
         type: Sequelize.STRING
       },
       thumbnail_id: {
-        allowNULL: true,
+        allowNull: true,
         type: Sequelize.STRING
       },
       category_course_id: {
         allowNull: true,
         type: Sequelize.INTEGER,
-        reference: {
+        references: {
           model: 'category_courses',
           key: 'id'
         }

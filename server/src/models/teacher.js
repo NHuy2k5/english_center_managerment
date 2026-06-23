@@ -30,52 +30,10 @@ module.exports = (sequelize, DataTypes) => {
   Teacher.init({
     id: {
       allowNull: false,
-      autoIncrement: true,
       primaryKey: true,
-      type: DataTypes.INTEGER
-    },
-    user_name: {
-      allowNull: false,
-      type: DataTypes.STRING(50),
-      unique: true
-    },
-    password: {
-      allowNull: false,
-      type: DataTypes.STRING
-    },
-    full_name: {
-      allowNull: false,
-      type: DataTypes.STRING(50)
-    },
-    birthday: {
-      allowNull: true,
-      type: DataTypes.DATE
-    },
-    sex: {
-      allowNull: true,
-      type: DataTypes.STRING(10)
-    },
-    email: {
-      allowNull: true,
-      type: DataTypes.STRING(100),
-      unique: true
-    },
-    phone: {
-      allowNull: false,
-      type: DataTypes.STRING(20),
-      unique: true
-    },
-    avatar_link: {
-      allowNull: true,
-      type: DataTypes.STRING
-    },
-    avatar_id: {
-      allowNull: true,
-      type: DataTypes.STRING
-    },
-    address: {
-      allowNull: true,
-      type: DataTypes.STRING(100)
+      type: DataTypes.INTEGER,
+      onDelete: 'CASCADE',
+      onUpdate: 'CASCADE'
     },
     balance: {
       allowNull: false,
@@ -92,7 +50,7 @@ module.exports = (sequelize, DataTypes) => {
     },
     description: {
       allowNull: true,
-      type: DataTypes.JSON,
+      type: DataTypes.TEXT,
       get() {
         const value = this.getDataValue('description'); 
         return value
@@ -117,7 +75,8 @@ module.exports = (sequelize, DataTypes) => {
     tableName: 'teachers',
     timestamps: true,
     createdAt: 'created_at',
-    updatedAt: 'updated_at'
+    updatedAt: 'updated_at',
+    paranoid: true
   });
   return Teacher;
 };

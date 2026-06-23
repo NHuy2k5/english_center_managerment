@@ -30,7 +30,8 @@ module.exports = (sequelize, DataTypes) => {
     tableName: 'parent_coupon',
     timestamps: true,
     createdAt: 'created_at',
-    updatedAt: 'updated_at'
+    updatedAt: 'updated_at',
+    paranoid: true
   });
   return ParentCoupon;
 };

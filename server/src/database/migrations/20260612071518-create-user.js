@@ -23,29 +23,29 @@ module.exports = {
         type: Sequelize.STRING(50)
       },
       birthday: {
-        allowNULL: true,
+        allowNull: true,
         type: Sequelize.DATE
       },
       sex: {
-        allowNULL: true,
+        allowNull: true,
         type: Sequelize.STRING(10)
       },
       email: {
-        allowNULL: true,
+        allowNull: true,
         type: Sequelize.STRING(100),
         unique: true
       }, 
       phone: {
-        allowNULL: false,
+        allowNull: false,
         type: Sequelize.STRING(20),
         unique: true
       }, 
       avatar_link: {
-        allowNULL: true,
+        allowNull: true,
         type: Sequelize.STRING
       }, 
       avatar_id: {
-        allowNULL: true,
+        allowNull: true,
         type: Sequelize.STRING
       },
       address: {

@@ -1,5 +1,4 @@
 const { Registration, CategoryCourse, sequelize } = require("../models/index");
-const { hashPassword } = require("../utilities/hashing")
 const { transformRegistration } = require('../transformers/registration.transformer');
 const query = (registrationQuery={}) => {
     const hasWhere = where => where && Object.keys(where).length > 0;
@@ -100,17 +99,17 @@ module.exports = {
         const t = await sequelize.transaction();
         try {
             // Thêm thông tin đăng ký tư vấn
-            const Registration = await User.create({
+            const registration = await Registration.create({
                 phone: data.phone,
                 email: data.email,
                 full_name: data.full_name,
                 address: data.address,
-                category_course_id: data.category_course_id;
+                category_course_id: data.category_course_id,
                 created_at: new Date(),
                 updated_at: new Date()
             }, { transaction: t });
             await t.commit();
-            const result = await Registration.findByPk(user.id, query());
+            const result = await Registration.findByPk(registration.id, query());
             return {
                 status: 201,
                 data: transformRegistration(result),

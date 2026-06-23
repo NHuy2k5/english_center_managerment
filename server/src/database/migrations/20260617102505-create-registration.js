@@ -18,11 +18,11 @@ module.exports = {
         type: Sequelize.STRING(100),
       },
       phone: {
-        allowNULL: false,
+        allowNull: false,
         type: Sequelize.STRING(20),
       },
       address: {
-        allowNULL: false,
+        allowNull: false,
         type: Sequelize.STRING(100)
       },
       category_course_id: {                

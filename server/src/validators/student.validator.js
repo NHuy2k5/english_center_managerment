@@ -99,3 +99,4 @@ const updateStudentSchema = object({
         avatar_id: string().nullable(),
     })
 })
+module.exports = {createStudentSchema, updateStudentSchema}

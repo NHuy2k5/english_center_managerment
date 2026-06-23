@@ -11,9 +11,6 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
-      User.hasOne(models.GeneralUser, {
-        foreignKey: 'id'
-      })
       User.hasOne(models.Student, {
         foreignKey: 'id'
       });
@@ -56,29 +53,29 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING(50)
     },
     birthday: {
-      allowNULL: true,
+      allowNull: true,
       type: DataTypes.DATE
     },
     sex: {
-      allowNULL: true,
+      allowNull: true,
       type: DataTypes.STRING(10)
     },
     email: {
-      allowNULL: true,
+      allowNull: true,
       type: DataTypes.STRING(100),
       unique: true
     },
     phone: {
-      allowNULL: false,
+      allowNull: false,
       type: DataTypes.STRING(20),
       unique: true
     },
     avatar_link: {
-      allowNULL: true,
+      allowNull: true,
       type: DataTypes.STRING
     },
     avatar_id: {
-      allowNULL: true,
+      allowNull: true,
       type: DataTypes.STRING
     },
     address: {

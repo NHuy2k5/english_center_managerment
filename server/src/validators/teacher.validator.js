@@ -101,10 +101,7 @@ const updateTeacherSchema = object({
         avatar_link: string().url("Avatar link must be link url").nullable(),
         avatar_id: string().nullable(),
         balance: number().test('check-value', "The balance value must be greater than or equal to 0.", (value) => {
-            if (value === undefined) {
-                return true;
-            }
-            return value >= 0
+            return value === undefined || value >= 0
         }),
         description: string(),
         thumbnail_link: string("Thumbnail link must be link url").url(),
@@ -112,3 +109,4 @@ const updateTeacherSchema = object({
         status: string().oneOf(['private', 'public'], "Teacher status must be private or public"),
     })
 })
+module.exports = {createTeacherSchema, updateTeacherSchema}
