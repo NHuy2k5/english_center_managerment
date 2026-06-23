@@ -9,31 +9,31 @@ const { Course,
     TuitionFee,
     sequelize } = require("../models/index");
 const { transformCourse } = require('../transformers/course.transformer');
-const query = (courseQuery={}) => {
+const query = (courseQuery = {}) => {
     const hasWhere = where => where && Object.keys(where).length > 0;
     return {
-            distinct: true,
-            ...(courseQuery.limit != null && { limit: courseQuery.limit }),
-            ...(courseQuery.offset != null && { offset: courseQuery.offset }),
-            ...(courseQuery.course?.attributes?.length && { attributes: courseQuery.course.attributes }),
-            order: [
-                ...(courseQuery.course?.order || []),
-                ...((courseQuery.categoryCourse?.order || []).map(order => [
-                    { model: CategoryCourse, as: 'course_in_category' },
-                    ...order
-                ]))
-            ],
-            ...(hasWhere(courseQuery.course?.where) && {
-                where: courseQuery.course.where
-            }),
-            include: [
-                {
-                    model: CategoryCourse,
-                    as: 'course_in_category',
-                    required: false,
-                    attributes: ['name']
-                }
-            ]
+        distinct: true,
+        ...(courseQuery.limit != null && { limit: courseQuery.limit }),
+        ...(courseQuery.offset != null && { offset: courseQuery.offset }),
+        ...(courseQuery.course?.attributes?.length && { attributes: courseQuery.course.attributes }),
+        order: [
+            ...(courseQuery.course?.order || []),
+            ...((courseQuery.categoryCourse?.order || []).map(order => [
+                { model: CategoryCourse, as: 'course_in_category' },
+                ...order
+            ]))
+        ],
+        ...(hasWhere(courseQuery.course?.where) && {
+            where: courseQuery.course.where
+        }),
+        include: [
+            {
+                model: CategoryCourse,
+                as: 'course_in_category',
+                required: false,
+                attributes: ['name']
+            }
+        ]
     };
 }
 module.exports = {
@@ -109,20 +109,7 @@ module.exports = {
     createCourse: async (data) => {
         const t = await sequelize.transaction();
         try {
-            const role = await Role.findOne({
-                where: {
-                    name: 'course',
-                },
-                transaction: t
-            });
-            if (!role) {
-                await t.rollback();
-                return {
-                    status: 404,
-                    message: "Role course not found"
-                }
-            }
-            // Thêm thông tin user Course
+            // Thêm thông tin Course
             const course = await Course.create({
                 name: data.name,
                 year_course: data.year_course,
@@ -162,31 +149,34 @@ module.exports = {
                 };
             };
             if ("name" in data) {
-              courseData.name = data.name;
+                courseData.name = data.name;
             };
             if ("year_course" in data) {
-              courseData.year_course = data.year_course;
+                courseData.year_course = data.year_course;
             };
             if ("description" in data) {
-              courseData.description = data.description;
+                courseData.description = data.description;
             };
             if ("thumbnail_link" in data) {
-              courseData.thumbnail_link = data.thumbnail_link;
+                courseData.thumbnail_link = data.thumbnail_link;
             };
             if ("thumbnail_id" in data) {
-              courseData.thumbnail_id = data.thumbnail_id;
+                courseData.thumbnail_id = data.thumbnail_id;
             };
             if ("category_course_id" in data) {
-              courseData.category_course_id = data.category_course_id;
+                courseData.category_course_id = data.category_course_id;
             };
             if ("status" in data) {
-              courseData.status = data.status;
+                courseData.status = data.status;
             };
-            await Course.update(courseData,
-            {
-                where: { id },
-                transaction: t
-            });
+            if (Object.keys(courseData).length) {
+
+                await Course.update(courseData,
+                    {
+                        where: { id },
+                        transaction: t
+                    });
+            }
             await t.commit();
             const result = await Course.findByPk(id, query());
             return {

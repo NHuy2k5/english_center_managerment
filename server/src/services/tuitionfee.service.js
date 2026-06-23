@@ -5,10 +5,14 @@ const { Student,
     UserRole,
     StudentClass,
     StudentLesson,
+    Lesson,
+    Class,
+    Coupon,
     TuitionFee,
     sequelize,
     Sequelize } = require("../models/index");
 const { Op, fn, col, literal } = require('sequelize');
+const dayjs = require('dayjs');
 /*  req.body
     {
         "student_ids": [1,2,3],
@@ -67,6 +71,7 @@ const calculateTuitionAggregate = async ({
 
 
                         start: {
+                            [Op.gte]: startDate,
                             [Op.lte]: Sequelize.literal(
                                 `
                                 CASE
@@ -193,8 +198,8 @@ const previewMonthlyTuitionFees = async ({
     const aggregate =
         await calculateTuitionAggregate({
             studentIds,
-            startDate,
-            endDate
+            month,
+            year
         });
     let coupon = null;
 
@@ -210,7 +215,13 @@ const previewMonthlyTuitionFees = async ({
             );
         }
     }
-
+    const now = dayjs();
+    if (coupon.start && dayjs(coupon.start).isAfter(now)) {
+        throw new Error('Coupon not yet valid');
+    }
+    if (coupon.end && dayjs(coupon.end).isBefore(now)) {
+        throw new Error('Coupon has expired');
+    }
     return aggregate.map(item => ({
         ...item,
         coupon_id:
@@ -311,11 +322,10 @@ const payTuitionFees = async ({
                     endMonth,
 
                 total_reality_lessons:
-                    item.totalRealityLessons,
+                    item.total_reality_lessons,
 
                 actual_listed_tuition_fee:
-                    item.actualListedTuitionFee,
-
+                    item.actual_listed_tuition_fee,
                 coupon_id:
                     item.coupon_id,
 
@@ -340,8 +350,8 @@ const payTuitionFees = async ({
         await transaction.rollback();
         return {
             status: 400,
-            message: error.message
+            message: err.message
         };
     }
 };
-module.exports = {previewMonthlyTuitionFees, payTuitionFees}
+module.exports = { previewMonthlyTuitionFees, payTuitionFees }

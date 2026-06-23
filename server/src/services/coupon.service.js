@@ -1,4 +1,5 @@
-const { Coupon, ParentCoupon, sequelize } = require("../models/index");
+const { Coupon, TuitionFee, ParentCoupon, sequelize } = require("../models/index");
+
 const query = (couponQuery = {}) => {
     const hasWhere = where => where && Object.keys(where).length > 0;
     return {
@@ -74,9 +75,9 @@ module.exports = {
             const coupon = await Coupon.create({
                 id: data.id,
                 name: data.name,
-                discount: data.name,
-                start: new Date(data.start) || startDefault,
-                end: new Date(data.end) || endDefault,
+                discount: data.discount ?? 0,
+                start: data.start ? new Date(data.start) : startDefault,
+                end: data.end ? new Date(data.end) : endDefault,
                 description: data.description ?? null,
                 number_of_users: data.number_of_users,
                 created_at: new Date(),
@@ -151,7 +152,7 @@ module.exports = {
             const result = await Coupon.findByPk(id, query());
             return {
                 status: 200,
-                data: transformCoupon(result),
+                data: result,
                 message: "Update success"
             };
         } catch (error) {
@@ -173,13 +174,6 @@ module.exports = {
                     message: "Coupon not found"
                 };
             };
-            // Xóa ở bảng parent_coupon
-            await ParentCoupon.destroy({
-                where: {
-                    id
-                },
-                transaction: t
-            })
             // Gỡ mã giảm giá ở bảng tuition_fee
             await TuitionFee.update({
                 coupon_id: null

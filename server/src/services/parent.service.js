@@ -165,7 +165,7 @@ module.exports = {
             // Thêm thông tin Parent
             await Parent.create({
                 id: user.id,
-                balance: data.balance,
+                balance: data.balance ?? 0,
                 created_at: new Date(),
                 updated_at: new Date()
             }, { transaction: t });
@@ -243,6 +243,14 @@ module.exports = {
                     message: "Parent not found"
                 };
             };
+            // Gỡ phụ huynh ra khỏi học sinh
+            await Student.update({
+                parent_id: null,
+            },{
+                where: {
+                    parent_id: id
+                }
+            }, {transaction: t})
             // Xóa role parent
             const parentRole = await Role.findOne({
                 where: {
@@ -250,6 +258,13 @@ module.exports = {
                 },
                 transaction: t
             });
+            if(!parentRole){
+                await t.rollback();
+                return {
+                    status: 404,
+                    message: "Role parent is not found"
+                }
+            }
             await UserRole.destroy({
                 where: {
                     user_id: id,

@@ -1,5 +1,6 @@
 const { where, Op } = require("sequelize");
 const { Student,
+    Lesson,
     Teacher,
     User,
     Class,
@@ -8,7 +9,7 @@ const { Student,
     StudentLesson,
     Assignment,
     sequelize } = require("../models/index");
-const { transformSheduleStudent } = require('../transformers/scheduleStudent.tranformer');
+const { transformScheduleStudent } = require('../transformers/scheduleStudent.tranformer');
 const { getAssignments } = require("./assignment.service");
 const studentLessonInclude = [
     {
@@ -88,7 +89,6 @@ module.exports = {
 
     getSchedules: async (userID) => {
         let rows;
-        const t = await sequelize.transaction();
 
         try {
             const userRole = await UserRole.findOne({
@@ -99,10 +99,8 @@ module.exports = {
                     model: Role,
                     attributes: ['name']
                 }],
-                transaction: t
             });
             if (!userRole) {
-                await t.rollback();
                 return {
                     status: 404,
                     message: "Schedules not found"
@@ -115,10 +113,8 @@ module.exports = {
                     where: {
                         id: userID
                     },
-                    transaction: t
                 });
                 if (!teacher) {
-                    await t.rollback();
                     return {
                         status: 404,
                         message: "Teacher ID is invalid"
@@ -130,7 +126,11 @@ module.exports = {
                             teacher_id: userID,
                         }
                     }
-                })
+                });
+                return {
+                        status: 404,
+                        message: "Schedules not found"
+                    }
             }
             else if (userRole.Role.name === 'student') {
                 // Check userID có role là tồn tại trong table students không
@@ -138,10 +138,9 @@ module.exports = {
                     where: {
                         id: userID
                     },
-                    transaction: t
+                    
                 });
                 if (!student) {
-                    await t.rollback();
                     return {
                         status: 404,
                         message: "Student ID is invalid"
@@ -153,10 +152,10 @@ module.exports = {
                         student_id: userID
                     },
                     include: studentLessonInclude,
-                    transaction: t
+                    
                 });
                 if (rows.length === 0) {
-                    await t.rollback();
+                    
                     return {
                         status: 404,
                         message: "Schedules not found"
@@ -170,10 +169,10 @@ module.exports = {
                     where: {
                         parent_id: userID
                     },
-                    transaction: t
+                    
                 });
                 if (students.length === 0) {
-                    await t.rollback();
+                    
                     return {
                         status: 404,
                         message: "Parent has not student"
@@ -183,14 +182,14 @@ module.exports = {
                 rows = await StudentLesson.findAll({
                     where: {
                         student_id: {
-                            [Op.in]: students.map(student => student.id)
+                            [Op.in]: studentsID
                         }
                     },
                     include: studentLessonInclude,
-                    transaction: t
+                    
                 });
                 if (rows.length === 0) {
-                    await t.rollback();
+                    
                     return {
                         status: 404,
                         message: "Schedules not found"
@@ -198,14 +197,13 @@ module.exports = {
                 }
                 rows = rows.map(transformSheduleStudent);
             }
-            await t.commit();
             return {
                 status: 200,
                 data: rows,
                 message: "Schedules found"
             };
         } catch (error) {
-            await t.rollback();
+            
             return {
                 status: 400,
                 message: error.message

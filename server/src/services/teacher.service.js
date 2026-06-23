@@ -137,7 +137,7 @@ module.exports = {
             // Thêm thông tin Teacher
             await Teacher.create({
                 id: user.id,
-                balance: data.balance,
+                balance: data.balance ?? 0,
                 description: data.description ?? null,
                 thumbnail_link: data.thumbnail_link ?? null,
                 thumbnail_id: data.thumbnail_id ?? null,
@@ -202,11 +202,13 @@ module.exports = {
             if ("status" in data) {
                 teacherData.status = status;
             }
-            await Teacher.update(teacherData,
-                {
-                    where: { id },
-                    transaction: t
-                });
+            if(Object.keys(teacherData).length){
+                await Teacher.update(teacherData,
+                    {
+                        where: { id },
+                        transaction: t
+                    });
+            }
             await t.commit();
             const result = await Teacher.findByPk(id, query());
             return {
@@ -249,7 +251,7 @@ module.exports = {
             // Xóa giáo viên ở monthly_teacher_salary
             await MonthlyTeacherSalary.destroy({
                 where: {
-                    user_id: id
+                    teacher_id: id
                 },
                 transaction: t
             })
@@ -260,17 +262,17 @@ module.exports = {
                 },
                 transaction: t
             });
-
+            if(!teacherRole){
+                await t.rollback();
+                return {
+                    status: 404,
+                    message: 'Role teacher not found'
+                }
+            }
             await UserRole.destroy({
                 where: {
                     user_id: id,
                     role_id: teacherRole.id
-                },
-                transaction: t
-            });
-            await UserRole.destroy({
-                where: {
-                    user_id: id
                 },
                 transaction: t
             });

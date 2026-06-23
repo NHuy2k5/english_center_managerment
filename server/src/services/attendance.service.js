@@ -2,12 +2,13 @@ const { Student,
     Parent,
     User,
     Role,
+    Lesson,
     UserRole,
     StudentClass,
     StudentLesson,
     TuitionFee,
     sequelize } = require("../models/index");
-const { hashPassword } = require("../utilities/hashing")
+const { Op, fn, col, literal } = require('sequelize'); 
 const { transformAttendance } = require("../transformers/attendance.transformer");
 const VALID_STATUS = [
     'ready',
@@ -72,7 +73,7 @@ module.exports = {
                     }]
                 }]
             }],
-            order: [['start_date', 'ASC']]
+            order: [['start', 'ASC']]
         });
         if (lessons.length == 0) {
             return {
@@ -112,7 +113,7 @@ module.exports = {
             }]
         });
 
-        if (!lesson == 0) {
+        if (!lesson) {
             return {
                 status: 404,
                 message: "Lesson not found"
@@ -184,12 +185,12 @@ module.exports = {
                     );
                 }
                 const row = map.get(item.student_id);
-                changedRows.push(row)
                 if (!row) {
                     throw new Error(
                         `Student ${item.student_id} not found`
                     );
                 }
+                changedRows.push(row);
 
                 row.status = item.status;
             }
@@ -203,6 +204,7 @@ module.exports = {
             await t.commit();
 
             return {
+                status: 200,
                 message: 'Attendance updated'
             };
 

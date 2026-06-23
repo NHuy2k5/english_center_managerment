@@ -5,6 +5,7 @@ const cors = require('cors');
 
 const app = express();
 dotenv.config();
+const {startSessionCleanupJob} = require('./cron/sessionCleanup');
 const port = process.env.PORT || 5003;
 
 // config cors
@@ -20,7 +21,7 @@ app.use(express.json());
 
 // khai báo route
 try {
-    
+    startSessionCleanupJob();
     app.use("/api/v1", router);
 } catch (error) {
     console.log(error);

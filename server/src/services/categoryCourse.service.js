@@ -96,7 +96,10 @@ module.exports = {
                 };
             };
             if ("name" in data) {
-                await CategoryCourse.update({ data },
+                await CategoryCourse.update(
+                    {
+                    name: data.name 
+                    },
                     {
                         where: { id },
                         transaction: t
@@ -106,7 +109,7 @@ module.exports = {
             const result = await CategoryCourse.findByPk(id, query());
             return {
                 status: 200,
-                data: transformCategoryCourse(result),
+                data: result,
                 message: "Update success"
             };
         } catch (error) {

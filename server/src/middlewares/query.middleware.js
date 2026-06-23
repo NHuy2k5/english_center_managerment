@@ -1,8 +1,8 @@
+const {Op} = require('sequelize');
 const FIELD_MAP = {
     // User
     user_name: "user",
     birthday: "user",
-    address: "user",
     sex: "user",
 
     // Student
@@ -231,13 +231,12 @@ const createQueryOptions = () => ({
 });
 // ?_fields=full_name,phone,parent_id
 const parseFields = (req) => {
-    const resource = req.path.split("/").filter((item) => item !== '')[0];
     if (!req.query._fields) {
         return;
     };
     const fields = req.query._fields.split(",");
     for (const field of fields) {
-        const model = getModelByField(field, resource);
+        const model = getModelByField(field, req.resource);
         if (!model) continue;
         const isVirtual =
             VIRTUAL_FIELDS[model]?.includes(field);
@@ -251,17 +250,15 @@ const parseFields = (req) => {
 
 // ?_sort=full_name&_order=desc
 const parseSort = (req) => {
-    const resource = req.path.split("/").filter((item) => item !== '')[0];
     if (!req.query._sort) {
         return;
     };
-    const model = getModelByField(req.query._sort, resource);
+    const model = getModelByField(req.query._sort, req.resource);
     if (!model) return;
-    res.queryOptions[model].order.push([req.query._sort, (req.query._order || ASC).toUpperCase()]);
+    req.queryOptions[model].order.push([req.query._sort, (req.query._order || 'ASC').toUpperCase()]);
 }
 // ?_page=1&_limit=10
 const parsePagination = (req) => {
-    const resource = req.path.split("/").filter((item) => item !== '')[0];
     const page = Number(req.query._page || 1);
     const limit = Number(req.query._limit || 10);
     req.queryOptions.limit = limit;
@@ -279,7 +276,6 @@ const OPERATOR_MAP = {
     like: Op.like
 };
 const parseFilters = (req) => {
-    const resource = req.path.split("/").filter((item) => item !== '')[0];
     for (const [key, value] of Object.entries(req.query)) {
         if (key.startsWith("_") || key === "q") {
             continue;
@@ -296,7 +292,7 @@ const parseFilters = (req) => {
             field = key;
         }
 
-        const model = getModelByField(field, resource);
+        const model = getModelByField(field, req.resource);
 
         if (!model) {
             continue;
@@ -344,7 +340,9 @@ const parseSearch = (req) => {
 const buildQuery = (req, res, next) => {
 
     req.queryOptions = createQueryOptions();
-
+    if (!req.resource) {
+        req.resource = req.path.split("/").filter(Boolean)[0];
+    }
     parseFields(req);
     parseSort(req);
     parsePagination(req);

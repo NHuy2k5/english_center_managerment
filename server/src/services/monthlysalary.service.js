@@ -10,6 +10,7 @@ const { Student,
     Sequelize } = require("../models/index");
 const { Op, fn, col, literal } = require('sequelize');
 const {transformSalary} = require('../transformers/monthlyTeacherSalary.transformer');
+const dayjs = require('dayjs');
 /*  req.body
     {
         "teacher_ids": [1,2,3],
@@ -17,8 +18,6 @@ const {transformSalary} = require('../transformers/monthlyTeacherSalary.transfor
         "year": 2026
     }
 */
-
-const { Op, fn, col, literal } = require('sequelize');
 // Tạo lương hàng tháng
 const generateMonthlyTeacherSalary = async ({
     teacherIds,
@@ -50,9 +49,6 @@ const generateMonthlyTeacherSalary = async ({
 
         attributes: [
             'teacher_id',
-            [
-                Sequelize.col("Teacher->teacher_user.full_name"), "teacher_name",
-            ],
 
             [
                 fn('COUNT',col('Lessons.id')),'total_lessons'
@@ -168,7 +164,7 @@ const getMonthlyTeacherSalaries = async ({
         .startOf('month')
         .format('YYYY-MM-DD');
 
-    const salaries = MonthlyTeacherSalary.findAll({
+    const salaries = await MonthlyTeacherSalary.findAll({
         where: {
 
             the_first_of_the_month:
@@ -188,7 +184,7 @@ const getMonthlyTeacherSalaries = async ({
                 include: [{
                     model: User,
                     as: 'teacher_user',
-                    attributes: ['fullname', 'phone', 'email']
+                    attributes: ['full_name', 'phone', 'email']
                 }]
             }
         ],
@@ -206,7 +202,7 @@ const getMonthlyTeacherSalaries = async ({
     return {
         status: 200,
         data: salaries.map(transformSalary),
-        message: 'Salaries not found'
+        message: 'Salaries found'
     }
 };
 // Hàm trả tiền lương
@@ -325,7 +321,7 @@ const payTeacherSalary = async (
         await t.rollback();
         return {
             status: 400,
-            message: error.message
+            message: err.message
         };
     }
 };

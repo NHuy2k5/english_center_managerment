@@ -9,6 +9,7 @@ const {
     Lesson,
     TuitionFee,
     StudentLesson,
+    DataTypes,
     sequelize } = require("../models/index");
 const { transformClass } = require('../transformers/class.transformer');
 const buildComputedAttributes = require('../utilities/build-field');
@@ -144,33 +145,33 @@ module.exports = {
         }
     },
     updateClass: async (data, id) => {
-        const classData = {};
-        if ('name' in data) {
-            classData.name = data.name;
-        };
-        if ('course_id' in data) {
-            classData.course_id = data.course_id;
-        }
-        if ('total_students' in data) {
-            const currentStudent = await StudentClass.count({
-                where: {
-                    class_id: id,
-                    left_at: null
-                },
-                transaction: t
-            });
-            if (data.total_students < currentStudent) {
-                throw Error(
-                    "Total students cannot smaller than current students"
-                );
-            }
-            classData.total_students = data.total_students;
-        }
-        if ('status' in data) {
-            classData.status = data.status
-        }
         const t = await sequelize.transaction();
         try {
+            const classData = {};
+            if ('name' in data) {
+                classData.name = data.name;
+            };
+            if ('course_id' in data) {
+                classData.course_id = data.course_id;
+            }
+            if ('total_students' in data) {
+                const currentStudent = await StudentClass.count({
+                    where: {
+                        class_id: id,
+                        left_at: null
+                    },
+                    transaction: t
+                });
+                if (data.total_students < currentStudent) {
+                    throw Error(
+                        "Total students cannot smaller than current students"
+                    );
+                }
+                classData.total_students = data.total_students;
+            }
+            if ('status' in data) {
+                classData.status = data.status
+            }
             const cLass = await Class.findByPk(id, { transaction: t });
             if (!cLass) {
                 await t.rollback();
@@ -264,11 +265,11 @@ module.exports = {
                     const lessons = await Lesson.findAll({
                         attributes: ['id'],
                         where: {
-                            classID
+                            class_id :classID
                         },
                         transaction: t
                     });
-                    if (!lessons.length > 0) {
+                    if (!lessons.length) {
                         throw Error("Can not add student to this class because not lesson in class");
                     }
                     else {
@@ -282,7 +283,7 @@ module.exports = {
                         await t.commit();
                         return {
                             status: 200,
-                            message: "Add teacher to class successfully"
+                            message: "Add student to class successfully"
                         }
                     }
                 }
@@ -350,7 +351,8 @@ module.exports = {
                         student_id: userID,
                         left_at: {
                             [Op.is]: null
-                        }
+                        },
+                        transaction: t
                     }
                 });
                 if (!studentInClass) {

@@ -96,7 +96,6 @@ module.exports = {
         }
     },
     createRegistration: async (data) => {
-        const t = await sequelize.transaction();
         try {
             // Thêm thông tin đăng ký tư vấn
             const registration = await Registration.create({
@@ -107,8 +106,7 @@ module.exports = {
                 category_course_id: data.category_course_id,
                 created_at: new Date(),
                 updated_at: new Date()
-            }, { transaction: t });
-            await t.commit();
+            });
             const result = await Registration.findByPk(registration.id, query());
             return {
                 status: 201,
@@ -116,7 +114,6 @@ module.exports = {
                 message: "Create success"
             };
         } catch (error) {
-            await t.rollback();
             return {
                 status: 400,
                 message: error.message

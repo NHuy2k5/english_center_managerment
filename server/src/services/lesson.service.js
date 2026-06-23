@@ -1,4 +1,4 @@
-const { Lesson,
+const { Lesson, Class,
     sequelize } = require("../models/index");
 const { transformLesson } = require('../transformers/lesson.transformer');
 const query = (lessonQuery = {}) => {
@@ -70,7 +70,7 @@ module.exports = {
             message: "Lessons found"
         };
     },
-    getLesson: async (classID) => {
+    getLesson: async (id) => {
         const lesson = await Lesson.findByPk(id, query())
         if (!lesson) {
             return {
@@ -88,13 +88,12 @@ module.exports = {
         const t = await sequelize.transaction();
         try {
             // Thêm thông tin user
-            const user = await User.create({
+            const user = await Lesson.create({
                 name: data.name,
                 start: new Date(data.start),
                 end: new Date(data.end),
                 description: data.description ?? null,
                 listed_price: data.listed_price??0,
-                address: data.address,
                 class_id: data.class_id,
                 address: data.address ?? null,
                 status: data.status || 'not_canceled', 
@@ -145,7 +144,7 @@ module.exports = {
             else {
                 if ("end" in data) {
                     if (new Date(data.end) >= lesson.start) {
-                        couponData.end = new Date(data.end);
+                        lessonData.end = new Date(data.end);
                     }
                     else {
                         throw new Error("Updated End date must be greater or eqeal current Start date")
@@ -155,7 +154,7 @@ module.exports = {
             if ('description' in data) {
                 lessonData.description = data.description;
             }
-            if ('classs_id' in data) {
+            if ('class_id' in data) {
                 lessonData.classs_id = data.classs_id;
             }
             if ('status' in data) {

@@ -25,7 +25,7 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: 'user_id'
       });
       User.hasOne(models.Session, {
-        foreignKey: 'id'
+        foreignKey: 'user_id'
       });
       User.hasMany(models.Notification, {
         foreignKey: 'user_id'

@@ -1,4 +1,4 @@
-exports.transformSheduleStudent = (schedule) => {
+exports.transformScheduleStudent = (schedule) => {
     const data = schedule.toJSON();
     const { Student, Lesson, ...scheduleData } = data;
     const { student_user } = Student;

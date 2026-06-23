@@ -7,45 +7,46 @@ const { Student,
     StudentLesson,
     TuitionFee,
     sequelize } = require("../models/index");
+const { where, Op } = require("sequelize");
 const { hashPassword } = require("../utilities/hashing")
 const { transformStudent } = require('../transformers/student.transformer');
-const query = (studentQuery={}) => {
+const query = (studentQuery = {}) => {
     const hasWhere = where => where && Object.keys(where).length > 0;
     return {
-            distinct: true,
-            ...(studentQuery.limit != null && { limit: studentQuery.limit }),
-            ...(studentQuery.offset != null && { offset: studentQuery.offset }),
-            ...(studentQuery.student?.attributes?.length && { attributes: studentQuery.student.attributes }),
-            order: [
-                ...(studentQuery.student?.order || []),
-                ...((studentQuery.user?.order || []).map(order => [
-                    { model: User, as: 'student_user' },
-                    ...order
-                ]))
-            ],
-            ...(hasWhere(studentQuery.student?.where) && {
-                where: studentQuery.student.where
-            }),
-            include: [
-                {
+        distinct: true,
+        ...(studentQuery.limit != null && { limit: studentQuery.limit }),
+        ...(studentQuery.offset != null && { offset: studentQuery.offset }),
+        ...(studentQuery.student?.attributes?.length && { attributes: studentQuery.student.attributes }),
+        order: [
+            ...(studentQuery.student?.order || []),
+            ...((studentQuery.user?.order || []).map(order => [
+                { model: User, as: 'student_user' },
+                ...order
+            ]))
+        ],
+        ...(hasWhere(studentQuery.student?.where) && {
+            where: studentQuery.student.where
+        }),
+        include: [
+            {
+                model: User,
+                as: 'student_user',
+                required: true,
+                ...(studentQuery.user?.attributes?.length ? { attributes: studentQuery.user.attributes } : { attributes: { exclude: ['password'] } }),
+                ...(hasWhere(studentQuery.user?.where) && {
+                    where: studentQuery.user.where
+                })
+            },
+            {
+                model: Parent,
+                required: false,
+                include: [{
                     model: User,
-                    as: 'student_user',
-                    required: true,
-                    ...(studentQuery.user?.attributes?.length ? { attributes: studentQuery.user.attributes } : { attributes: { exclude: ['password'] } }),
-                    ...(hasWhere(studentQuery.user?.where) && {
-                        where: studentQuery.user.where
-                    })
-                },
-                {
-                    model: Parent,
-                    required: false,
-                    include: [{
-                        model: User,
-                        as: 'parent_user',
-                        attributes: ["id", "full_name", "avatar_id", "avatar_link, balance"]
-                    }]
-                }
-            ]
+                    as: 'parent_user',
+                    attributes: ["id", "full_name", "avatar_id", "avatar_link", "balance"]
+                }]
+            }
+        ]
     };
 }
 module.exports = {
@@ -206,7 +207,7 @@ module.exports = {
                     message: "Student not found"
                 };
             };
-            if(Object.keys(userData).length){
+            if (Object.keys(userData).length) {
                 await User.update(userData,
                     {
                         where: { id },
@@ -246,6 +247,22 @@ module.exports = {
                     message: "Student not found"
                 };
             };
+            const studentRole = await Role.findOne({ where: { name: "student" } });
+
+            await UserRole.destroy({
+                where: {
+                    user_id: id,
+                    role_id: studentRole.id
+                },
+                transaction: t
+            });
+            if (!studentRole){
+                await t.rollback();
+                return {
+                    status: 404,
+                    message: "Role student not found"
+                };
+            }
             await TuitionFee.destroy({
                 where: {
                     student_id: id
