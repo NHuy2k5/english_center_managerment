@@ -42,7 +42,7 @@ const query = (studentQuery={}) => {
                     include: [{
                         model: User,
                         as: 'parent_user',
-                        attributes: ["id", "full_name", "avatar_id", "avatar_link"]
+                        attributes: ["id", "full_name", "avatar_id", "avatar_link, balance"]
                     }]
                 }
             ]

@@ -126,14 +126,11 @@ module.exports = {
             const course = await Course.create({
                 name: data.name,
                 year_course: data.year_course,
-                total_lessons: data.total_lessons,
-                listed_price: data.listed_price,
                 description: data.description,
                 thumbnail_link: data.thumbnail_link,
                 thumbnail_id: data.thumbnail_id,
                 category_course_id: data.category_course_id ?? null,
                 status: data.status || 'private',
-                discount: data.discount || 0,
                 created_at: new Date(),
                 updated_at: new Date()
             }, { transaction: t });

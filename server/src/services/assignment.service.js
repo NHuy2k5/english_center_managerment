@@ -12,6 +12,8 @@ const query = (assignmentQuery = {}) => {
     const hasWhere = where => where && Object.keys(where).length > 0;
     return {
         distinct: true,
+        ...(assignmentQuery.limit != null && { limit: assignmentQuery.limit }),
+        ...(assignmentQuery.offset != null && { offset: assignmentQuery.offset }),
         ...(assignmentQuery.assignment?.attributes?.length && { attributes: assignmentQuery.assignment.attributes }),
         order: [
             ...(assignmentQuery.assignment?.order || []),
