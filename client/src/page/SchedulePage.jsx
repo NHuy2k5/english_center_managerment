@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import {
   Layout,
   Row,
@@ -13,6 +13,7 @@ import {
   Table,
   Tag,
   Timeline,
+  Alert,
 } from "antd";
 import {
   ArrowLeftOutlined,
@@ -20,61 +21,91 @@ import {
   CalendarOutlined,
   TeamOutlined,
   InfoCircleOutlined,
+  UserOutlined,
 } from "@ant-design/icons";
 
 const { Content } = Layout;
 const { Title, Text } = Typography;
 
-const monthLabels = [
-  "Tháng 1",
-  "Tháng 2",
-  "Tháng 3",
-  "Tháng 4",
-  "Tháng 5",
-  "Tháng 6",
-  "Tháng 7",
-  "Tháng 8",
-  "Tháng 9",
-  "Tháng 10",
-  "Tháng 11",
-  "Tháng 12",
-];
+// --- Giả sử role lấy từ context/auth ---
+const CURRENT_ROLE = "Teacher"; // Hoặc "Student", "Parent"
 
-const weekDayLabels = ["Thứ hai", "Thứ ba", "Thứ tư", "Thứ năm", "Thứ sáu", "Thứ bảy", "Chủ nhật"];
-
-const classes = [
+// --- Mock dữ liệu cho giáo viên ---
+const mockTeacherData = [
   {
-    id: "PRE102084",
-    label: "Lớp 3.1 - 2018",
-    grade: "Lớp 3",
-    year: 2018,
-    teacher: "Trần Ngọc Loan",
-    room: "GT - TOEIC 12 Nguyễn Văn Lộc, Hà Đông, HN",
-    method: "Offline",
-    students: 18,
+    lesson_id: 101,
+    name: "Buổi 1 - Chào hỏi",
+    start: "2026-05-01T18:00:00",
+    end: "2026-05-01T19:30:00",
+    description: "Học giới thiệu bản thân",
+    address: "12 Nguyễn Văn Lộc, Hà Đông",
+    teacher_name: "Cô Trần Ngọc Loan",
+    class_id: 1,
+    class_name: "Lớp 3A",
+    marked: "main_teach",
   },
   {
-    id: "PRE102085",
-    label: "Lớp 3.2 - 2018",
-    grade: "Lớp 3",
-    year: 2018,
-    teacher: "Trần Ngọc Loan",
-    room: "GT - TOEIC 12 Nguyễn Văn Lộc, Hà Đông, HN",
-    method: "Offline",
-    students: 16,
+    lesson_id: 102,
+    name: "Buổi 2 - Gia đình",
+    start: "2026-05-03T18:00:00",
+    end: "2026-05-03T19:30:00",
+    description: "Từ vựng về gia đình",
+    address: "12 Nguyễn Văn Lộc, Hà Đông",
+    teacher_name: "Cô Trần Ngọc Loan",
+    class_id: 1,
+    class_name: "Lớp 3A",
+    marked: "substitute_teach",
+  },
+  {
+    lesson_id: 103,
+    name: "Buổi 3 - Ngữ pháp",
+    start: "2026-05-05T18:00:00",
+    end: "2026-05-05T19:30:00",
+    description: "Ngữ pháp cơ bản",
+    address: "12 Nguyễn Văn Lộc, Hà Đông",
+    teacher_name: "Cô Trần Ngọc Loan",
+    class_id: 1,
+    class_name: "Lớp 3A",
+    marked: "main_teach",
+  },
+  {
+    lesson_id: 104,
+    name: "Buổi 4 - Nghe hiểu",
+    start: "2026-05-08T18:00:00",
+    end: "2026-05-08T19:30:00",
+    description: "Luyện nghe",
+    address: "12 Nguyễn Văn Lộc, Hà Đông",
+    teacher_name: "Cô Trần Ngọc Loan",
+    class_id: 1,
+    class_name: "Lớp 3A",
+    marked: "absence_from_teaching",
+  },
+  {
+    lesson_id: 201,
+    name: "Buổi 1 - Hello",
+    start: "2026-05-02T18:00:00",
+    end: "2026-05-02T19:30:00",
+    description: "Học chào hỏi cơ bản",
+    address: "12 Nguyễn Văn Lộc, Hà Đông",
+    teacher_name: "Cô Lê Thị Hoa",
+    class_id: 2,
+    class_name: "Lớp 3B",
+    marked: "main_teach",
   },
 ];
 
-const scheduleEvents = [
-  { id: 1, day: 1, classId: "PRE102084", title: "Buổi 1 - TOEIC cơ bản", time: "18:00 - 19:30", room: "A1", attendance: 19, absences: 1, month: 5, year: 2026 },
-  { id: 2, day: 3, classId: "PRE102084", title: "Buổi 2 - Từ vựng", time: "18:00 - 19:30", room: "A1", attendance: 18, absences: 2, month: 5, year: 2026 },
-  { id: 3, day: 5, classId: "PRE102084", title: "Buổi 3 - Ngữ pháp", time: "18:00 - 19:30", room: "A1", attendance: 20, absences: 0, month: 5, year: 2026 },
-  { id: 4, day: 8, classId: "PRE102084", title: "Buổi 4 - Nghe hiểu", time: "18:00 - 19:30", room: "A1", attendance: 17, absences: 3, month: 5, year: 2026 },
-  { id: 5, day: 2, classId: "PRE102085", title: "Buổi 1 - TOEIC cơ bản", time: "18:00 - 19:30", room: "A2", attendance: 16, absences: 0, month: 5, year: 2026 },
-  { id: 6, day: 4, classId: "PRE102085", title: "Buổi 2 - Từ vựng", time: "18:00 - 19:30", room: "A2", attendance: 15, absences: 1, month: 5, year: 2026 },
-  { id: 7, day: 9, classId: "PRE102085", title: "Buổi 3 - Ngữ pháp", time: "18:00 - 19:30", room: "A2", attendance: 15, absences: 1, month: 5, year: 2026 },
-];
+// Hàm xử lý ngày giờ
+const parseDate = (isoString) => new Date(isoString);
+const formatTime = (isoString) => {
+  const date = parseDate(isoString);
+  return `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
+};
+const formatDate = (isoString) => {
+  const date = parseDate(isoString);
+  return `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
+};
 
+// Tạo lưới tháng
 const buildMonthGrid = (year, month) => {
   const firstDay = new Date(year, month, 1);
   const lastDay = new Date(year, month + 1, 0).getDate();
@@ -94,38 +125,64 @@ const buildMonthGrid = (year, month) => {
   return weeks;
 };
 
+// Các hằng số
+const monthLabels = [
+  "Tháng 1",
+  "Tháng 2",
+  "Tháng 3",
+  "Tháng 4",
+  "Tháng 5",
+  "Tháng 6",
+  "Tháng 7",
+  "Tháng 8",
+  "Tháng 9",
+  "Tháng 10",
+  "Tháng 11",
+  "Tháng 12",
+];
+const weekDayLabels = ["Thứ hai", "Thứ ba", "Thứ tư", "Thứ năm", "Thứ sáu", "Thứ bảy", "Chủ nhật"];
+
 const SchedulePage = () => {
+  const [role] = useState(CURRENT_ROLE);
+  const [viewMode, setViewMode] = useState("calendar"); // 'calendar' hoặc 'timetable'
   const today = new Date();
   const [year, setYear] = useState(today.getFullYear());
   const [month, setMonth] = useState(today.getMonth());
   const [selectedDay, setSelectedDay] = useState(today.getDate());
-  const [selectedClassId, setSelectedClassId] = useState(classes[0].id);
-  const [viewMode, setViewMode] = useState("calendar");
 
-  const activeClass = classes.find((item) => item.id === selectedClassId);
-  const monthGrid = useMemo(() => buildMonthGrid(year, month), [year, month]);
+  // Dữ liệu giáo viên
+  const [teacherLessons, setTeacherLessons] = useState([]);
 
-  const filteredEvents = useMemo(
-    () => scheduleEvents.filter((item) => item.month === month && item.year === year && item.classId === selectedClassId),
-    [month, year, selectedClassId]
-  );
+  // Load dữ liệu mock (giả sử gọi API)
+  useEffect(() => {
+    if (role === "Teacher" || role === "Student") {
+      setTeacherLessons(mockTeacherData);
+    }
+  }, [role]);
 
-  const eventsByDay = useMemo(() => {
-    return filteredEvents.reduce((acc, event) => {
-      if (!acc[event.day]) acc[event.day] = [];
-      acc[event.day].push(event);
+  // Lọc dữ liệu theo tháng/năm
+  const filteredLessons = useMemo(() => {
+    return teacherLessons.filter((lesson) => {
+      const d = parseDate(lesson.start);
+      return d.getFullYear() === year && d.getMonth() === month;
+    });
+  }, [teacherLessons, year, month]);
+
+  // Gom các buổi học theo ngày
+  const lessonsByDay = useMemo(() => {
+    return filteredLessons.reduce((acc, lesson) => {
+      const day = parseDate(lesson.start).getDate();
+      if (!acc[day]) acc[day] = [];
+      acc[day].push(lesson);
       return acc;
     }, {});
-  }, [filteredEvents]);
+  }, [filteredLessons]);
 
-  const selectedEvents = eventsByDay[selectedDay] || [];
+  const selectedLessons = lessonsByDay[selectedDay] || [];
 
-  const summary = useMemo(() => {
-    const totalSessions = filteredEvents.length;
-    const totalAbsences = filteredEvents.reduce((sum, event) => sum + event.absences, 0);
-    return { totalSessions, totalAbsences };
-  }, [filteredEvents]);
+  const monthGrid = useMemo(() => buildMonthGrid(year, month), [year, month]);
 
+  // Xử lý chuyển tháng
   const handlePrevMonth = () => {
     if (month === 0) {
       setMonth(11);
@@ -146,15 +203,36 @@ const SchedulePage = () => {
     setSelectedDay(1);
   };
 
+  // Render trạng thái marked cho giáo viên
+  const renderMarkedTag = (marked) => {
+    let color = "";
+    let label = "";
+    if (marked === "main_teach") {
+      color = "blue";
+      label = "Dạy chính";
+    } else if (marked === "substitute_teach") {
+      color = "purple";
+      label = "Dạy thay";
+    } else if (marked === "absence_from_teaching") {
+      color = "red";
+      label = "Nghỉ dạy có phép";
+    } else {
+      color = "default";
+      label = marked || "Chưa có";
+    }
+    return <Tag color={color}>{label}</Tag>;
+  };
+
+  // Nếu role là Teacher hoặc Student, hiển thị lịch
   return (
     <Layout style={{ background: "transparent" }}>
       <Content style={{ padding: 24 }}>
         <Row justify="space-between" align="middle" style={{ marginBottom: 22 }}>
           <Col>
             <Title level={4} style={{ margin: 0 }}>
-              Lịch học & Phòng học
+              {role === "Teacher" ? "Lịch dạy" : "Lịch học"}
             </Title>
-            <Text type="secondary">Xem lịch học theo tháng, năm, lớp và phòng học.</Text>
+            <Text type="secondary">Xem lịch theo tháng, năm và lớp.</Text>
           </Col>
         </Row>
 
@@ -163,22 +241,7 @@ const SchedulePage = () => {
             <Card style={{ borderRadius: 20 }} bodyStyle={{ padding: 20 }}>
               <Space direction="vertical" size="middle" style={{ width: "100%" }}>
                 <div>
-                  <Text type="secondary">Chọn lớp</Text>
-                  <Select
-                    value={selectedClassId}
-                    onChange={setSelectedClassId}
-                    style={{ width: "100%", marginTop: 8 }}
-                  >
-                    {classes.map((item) => (
-                      <Select.Option key={item.id} value={item.id}>
-                        {item.label}
-                      </Select.Option>
-                    ))}
-                  </Select>
-                </div>
-
-                <div>
-                  <Text type="secondary">Chọn năm</Text>
+                  <Text type="secondary">Năm</Text>
                   <Select
                     value={year}
                     onChange={setYear}
@@ -193,8 +256,12 @@ const SchedulePage = () => {
                 </div>
 
                 <div>
-                  <Text type="secondary">Chọn tháng</Text>
-                  <Select value={month} onChange={setMonth} style={{ width: "100%", marginTop: 8 }}>
+                  <Text type="secondary">Tháng</Text>
+                  <Select
+                    value={month}
+                    onChange={setMonth}
+                    style={{ width: "100%", marginTop: 8 }}
+                  >
                     {monthLabels.map((label, index) => (
                       <Select.Option key={label} value={index}>
                         {label}
@@ -207,13 +274,13 @@ const SchedulePage = () => {
 
                 <Timeline style={{ paddingTop: 16 }}>
                   <Timeline.Item dot={<CalendarOutlined style={{ fontSize: 18 }} />} color="blue">
-                    <div style={{ fontSize: 14, lineHeight: 1.5 }}>Lớp {activeClass.label} đang dùng phòng {activeClass.room}</div>
+                    <div style={{ fontSize: 14, lineHeight: 1.5 }}>Tổng {filteredLessons.length} buổi trong tháng</div>
                   </Timeline.Item>
                   <Timeline.Item dot={<TeamOutlined style={{ fontSize: 18 }} />} color="green">
-                    <div style={{ fontSize: 14, lineHeight: 1.5 }}>Giáo viên chủ nhiệm: {activeClass.teacher}</div>
+                    <div style={{ fontSize: 14, lineHeight: 1.5 }}>Các lớp: {[...new Set(filteredLessons.map(l => l.class_name))].join(", ")}</div>
                   </Timeline.Item>
                   <Timeline.Item dot={<InfoCircleOutlined style={{ fontSize: 18 }} />} color="gray">
-                    <div style={{ fontSize: 14, lineHeight: 1.5 }}>Quản lý lớp học theo năm học riêng biệt và không xóa dữ liệu cũ.</div>
+                    <div style={{ fontSize: 14, lineHeight: 1.5 }}>Quản lý lịch dạy theo năm học.</div>
                   </Timeline.Item>
                 </Timeline>
               </Space>
@@ -230,13 +297,17 @@ const SchedulePage = () => {
                   <Col>
                     <Space>
                       <Button
-                        type={viewMode === 'calendar' ? 'primary' : 'default'}
-                        onClick={() => setViewMode('calendar')}
-                      >Lịch tháng</Button>
+                        type={viewMode === "calendar" ? "primary" : "default"}
+                        onClick={() => setViewMode("calendar")}
+                      >
+                        Lịch tháng
+                      </Button>
                       <Button
-                        type={viewMode === 'timetable' ? 'primary' : 'default'}
-                        onClick={() => setViewMode('timetable')}
-                      >Thời khóa biểu</Button>
+                        type={viewMode === "timetable" ? "primary" : "default"}
+                        onClick={() => setViewMode("timetable")}
+                      >
+                        Thời khóa biểu
+                      </Button>
                       <Button icon={<ArrowLeftOutlined />} onClick={handlePrevMonth} />
                       <Button icon={<ArrowRightOutlined />} onClick={handleNextMonth} />
                     </Space>
@@ -256,7 +327,7 @@ const SchedulePage = () => {
                     <Col key={weekIndex} span={24}>
                       <Row gutter={[10, 10]}>
                         {week.map((day, idx) => {
-                          const dayEvents = day ? eventsByDay[day] || [] : [];
+                          const dayLessons = day ? lessonsByDay[day] || [] : [];
                           const selected = day === selectedDay;
                           return (
                             <Col key={`${weekIndex}-${idx}`} span={Math.floor(24 / 7)}>
@@ -277,17 +348,20 @@ const SchedulePage = () => {
                               >
                                 <div style={{ fontWeight: 700, marginBottom: 8 }}>{day || ""}</div>
                                 <div>
-                                  {dayEvents.slice(0, 2).map((item) => (
-                                    <div key={item.id} style={{ marginBottom: 8, textAlign: 'center' }}>
+                                  {dayLessons.slice(0, 2).map((lesson) => (
+                                    <div key={lesson.lesson_id} style={{ marginBottom: 8, textAlign: "center" }}>
                                       <Tag color="blue" style={{ display: "inline-block" }}>
-                                        {item.classId}
+                                        {lesson.class_name}
                                       </Tag>
-                                      <div style={{ fontSize: 11, marginTop: 4, color: '#999' }}>{item.time}</div>
+                                      <div style={{ fontSize: 11, marginTop: 4, color: "#999" }}>
+                                        {formatTime(lesson.start)} - {formatTime(lesson.end)}
+                                      </div>
+                                      <div style={{ fontSize: 11, marginTop: 2 }}>{renderMarkedTag(lesson.marked)}</div>
                                     </div>
                                   ))}
-                                  {dayEvents.length > 2 && (
+                                  {dayLessons.length > 2 && (
                                     <Text type="secondary" style={{ fontSize: 12 }}>
-                                      +{dayEvents.length - 2} buổi
+                                      +{dayLessons.length - 2} buổi
                                     </Text>
                                   )}
                                 </div>
@@ -301,70 +375,81 @@ const SchedulePage = () => {
                 </Row>
               </Card>
             ) : (
+              // Chế độ xem danh sách (thời khóa biểu)
               <Card style={{ borderRadius: 20 }} bodyStyle={{ padding: 20 }}>
                 <Row justify="space-between" align="middle" style={{ marginBottom: 14 }}>
                   <Col>
-                    <Text strong>Danh sách lịch học</Text>
+                    <Text strong>Danh sách lịch dạy</Text>
                   </Col>
                   <Col>
                     <Space>
                       <Button
-                        type={viewMode === 'calendar' ? 'primary' : 'default'}
-                        onClick={() => setViewMode('calendar')}
-                      >Lịch tháng</Button>
+                        type={viewMode === "calendar" ? "primary" : "default"}
+                        onClick={() => setViewMode("calendar")}
+                      >
+                        Lịch tháng
+                      </Button>
                       <Button
-                        type={viewMode === 'timetable' ? 'primary' : 'default'}
-                        onClick={() => setViewMode('timetable')}
-                      >Thời khóa biểu</Button>
+                        type={viewMode === "timetable" ? "primary" : "default"}
+                        onClick={() => setViewMode("timetable")}
+                      >
+                        Thời khóa biểu
+                      </Button>
                       <Button icon={<ArrowLeftOutlined />} onClick={handlePrevMonth} />
                       <Button icon={<ArrowRightOutlined />} onClick={handleNextMonth} />
                     </Space>
                   </Col>
                 </Row>
-                {filteredEvents.length ? (
+                {filteredLessons.length ? (
                   <Space direction="vertical" size="large" style={{ width: "100%" }}>
-                    {filteredEvents.map((event) => (
-                      <Card key={event.id} type="inner" bodyStyle={{ padding: 16 }}>
+                    {filteredLessons.map((lesson) => (
+                      <Card key={lesson.lesson_id} type="inner" bodyStyle={{ padding: 16 }}>
                         <Row gutter={[16, 16]} align="middle">
                           <Col xs={24} md={6}>
-                            <Text strong>{event.title}</Text>
+                            <Text strong>{lesson.name}</Text>
                             <div style={{ marginTop: 8 }}>
                               <Tag icon={<CalendarOutlined />} color="default">
-                                {event.time}
+                                {formatTime(lesson.start)} - {formatTime(lesson.end)}
                               </Tag>
                             </div>
                           </Col>
-                          <Col xs={24} md={5}>
+                          <Col xs={24} md={4}>
                             <Text type="secondary">Ngày</Text>
-                            <div style={{ fontWeight: 700 }}>{event.day}/{month + 1}/{year}</div>
+                            <div style={{ fontWeight: 700 }}>{formatDate(lesson.start)}</div>
+                          </Col>
+                          <Col xs={24} md={4}>
+                            <Text type="secondary">Lớp</Text>
+                            <div>{lesson.class_name}</div>
                           </Col>
                           <Col xs={24} md={5}>
-                            <Text type="secondary">Phòng học</Text>
-                            <div>{event.room}</div>
+                            <Text type="secondary">Địa điểm</Text>
+                            <div>{lesson.address}</div>
                           </Col>
-                          <Col xs={24} md={4}>
-                            <Text type="secondary">Giáo viên</Text>
-                            <div>{activeClass.teacher}</div>
+                          <Col xs={24} md={5}>
+                            <Text type="secondary">Trạng thái</Text>
+                            <div>{renderMarkedTag(lesson.marked)}</div>
                           </Col>
-                          <Col xs={24} md={4}>
-                            <Text type="secondary">Điểm danh</Text>
-                            <div>{event.attendance} / {activeClass.students}</div>
+                        </Row>
+                        <Divider style={{ margin: "12px 0" }} />
+                        <Row>
+                          <Col span={24}>
+                            <Text type="secondary">Mô tả:</Text>
+                            <Text>{lesson.description}</Text>
                           </Col>
                         </Row>
                       </Card>
                     ))}
                   </Space>
                 ) : (
-                  <Card type="inner" bodyStyle={{ padding: 24, textAlign: "center" }}>
-                    <Text type="secondary">Không có lịch học nào cho tháng này. Hãy chọn tháng khác.</Text>
-                  </Card>
+                  <Alert message="Không có lịch dạy trong tháng này" type="info" showIcon />
                 )}
               </Card>
             )}
           </Col>
         </Row>
 
-        <Row gutter={[16, 16]} justify="center" style={{ marginTop: 20 }}>
+        {/* Phần chi tiết ngày chọn */}
+        <Row gutter={[16, 16]} style={{ marginTop: 20 }}>
           <Col xs={24}>
             <Card style={{ borderRadius: 20 }} bodyStyle={{ padding: 24 }}>
               <Row justify="space-between" align="middle" style={{ marginBottom: 20 }}>
@@ -372,61 +457,56 @@ const SchedulePage = () => {
                   <Title level={5} style={{ margin: 0 }}>
                     Chi tiết ngày {selectedDay}/{month + 1}/{year}
                   </Title>
-                  <Text type="secondary">Lịch học, phòng học và trạng thái chuyên cần.</Text>
+                  <Text type="secondary">Các buổi dạy trong ngày và trạng thái.</Text>
                 </Col>
                 <Col>
-                  <Badge count={selectedEvents.length} showZero>
+                  <Badge count={selectedLessons.length} showZero>
                     <Tag color="blue">Buổi</Tag>
                   </Badge>
                 </Col>
               </Row>
 
-              {selectedEvents.length ? (
+              {selectedLessons.length ? (
                 <Space direction="vertical" size="large" style={{ width: "100%" }}>
-                  {selectedEvents.map((event) => (
-                    <Card key={event.id} type="inner" bodyStyle={{ padding: 20 }}>
+                  {selectedLessons.map((lesson) => (
+                    <Card key={lesson.lesson_id} type="inner" bodyStyle={{ padding: 20 }}>
                       <Row gutter={[16, 16]} align="middle">
-                        <Col xs={24} md={10}>
-                          <Text strong>{event.title}</Text>
+                        <Col xs={24} md={8}>
+                          <Text strong>{lesson.name}</Text>
                           <div style={{ marginTop: 8 }}>
                             <Tag icon={<CalendarOutlined />} color="default">
-                              {event.time}
+                              {formatTime(lesson.start)} - {formatTime(lesson.end)}
                             </Tag>
                           </div>
                         </Col>
-                        <Col xs={24} md={7}>
-                          <Text type="secondary">Giáo viên</Text>
-                          <div>{activeClass.teacher}</div>
+                        <Col xs={24} md={4}>
+                          <Text type="secondary">Lớp</Text>
+                          <div>{lesson.class_name}</div>
                         </Col>
-                        <Col xs={24} md={7}>
-                          <Text type="secondary">Phòng học</Text>
-                          <div>{event.room}</div>
+                        <Col xs={24} md={6}>
+                          <Text type="secondary">Địa điểm</Text>
+                          <div>{lesson.address}</div>
+                        </Col>
+                        <Col xs={24} md={6}>
+                          <Text type="secondary">Trạng thái</Text>
+                          <div>{renderMarkedTag(lesson.marked)}</div>
                         </Col>
                       </Row>
-
-                      <Divider style={{ margin: "18px 0" }} />
-                      <Row gutter={[16, 16]}>
-                        <Col xs={24} md={8}>
-                          <Text type="secondary">Điểm danh</Text>
-                          <div>{event.attendance} / {activeClass.students}</div>
-                        </Col>
-                        <Col xs={24} md={8}>
-                          <Text type="secondary">Nghỉ</Text>
-                          <div>{event.absences} buổi</div>
+                      <Divider style={{ margin: "16px 0" }} />
+                      <Row>
+                        <Col span={24}>
+                          <Text type="secondary">Mô tả:</Text>
+                          <Text>{lesson.description}</Text>
                         </Col>
                       </Row>
                     </Card>
                   ))}
                 </Space>
               ) : (
-                <Card type="inner" bodyStyle={{ padding: 24, textAlign: "center" }}>
-                  <Text type="secondary">Chưa có lịch học cho ngày này. Hãy chọn ngày khác.</Text>
-                </Card>
+                <Alert message="Không có buổi dạy nào trong ngày này" type="info" showIcon />
               )}
             </Card>
           </Col>
-
-          {/* Right summary panel removed per request */}
         </Row>
       </Content>
     </Layout>
