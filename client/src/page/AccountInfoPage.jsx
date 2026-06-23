@@ -34,14 +34,52 @@ const AccountInfoPage = () => {
   const [passwordForm] = Form.useForm();
 
   const [user, setUser] = useState({
-    fullName: "Trần Xuân Thủy",
     email: "thuy@gmail.com",
     phone: "0976127895",
-    dob: "07/12/2005",
-    gender: "Nam",
     address: "Hà Nội",
-    role: "Nhân viên tư vấn",
+    // role values expected: 'student', 'parent', 'teacher', 'staff', ...
+    role: "student",
     avatar: null,
+
+    // new fields per requirement
+    user_name: "thuy",
+    full_name: "Trần Xuân Thủy",
+    birthday: "2005-12-07",
+    sex: "Nam",
+    // avatar link/id used in API shapes
+    avatar_link: null,
+    avatar_id: "1",
+
+    // parent object (only for students)
+    parent: {
+      id: 2,
+      avatar_link: null,
+      full_name: "Trần Thị Lan",
+      avatar_id: 10,
+    },
+
+    // students array (only for parents)
+    students: [
+      {
+        id: 3,
+        avatar_link: null,
+        full_name: "Nguyễn Văn A",
+        avatar_id: 20,
+      },
+      {
+        id: 4,
+        avatar_link: null,
+        full_name: "Lê Thị B",
+        avatar_id: 21,
+      },
+    ],
+
+    // optional fields for teacher/parent
+    balance: 0,
+    description: "",
+    thumbnail_link: null,
+    thumbnail_id: null,
+    status: null,
   });
 
   // helper to convert file to base64 for preview
@@ -66,7 +104,13 @@ const AccountInfoPage = () => {
   const handleAvatarUpload = ({ file, onSuccess }) => {
     // convert to base64 and set as user avatar
     getBase64(file, (imageUrl) => {
-      setUser((prev) => ({ ...prev, avatar: imageUrl }));
+      setUser((prev) => ({
+        ...prev,
+        avatar: imageUrl,
+        // keep API-friendly fields in sync
+        avatar_link: imageUrl,
+        avatar_id: `av_${Date.now()}`,
+      }));
       onSuccess && onSuccess("ok");
     });
   };
@@ -86,6 +130,21 @@ const AccountInfoPage = () => {
     // Placeholder: perform actual password change logic here
     message.success("Đổi mật khẩu thành công");
     passwordForm.resetFields();
+  };
+
+  const getRoleLabel = (role) => {
+    switch ((role || "").toLowerCase()) {
+      case "student":
+        return "Học sinh";
+      case "parent":
+        return "Phụ huynh";
+      case "teacher":
+        return "Giáo viên";
+      case "staff":
+        return "Nhân viên";
+      default:
+        return "Nhân viên tư vấn";
+    }
   };
 
   return (
@@ -145,11 +204,13 @@ const AccountInfoPage = () => {
               </Col>
 
               <Col style={{ paddingTop: 30 }}>
-                <h1 style={{ margin: "0 0 5px 0" }}>{user.fullName}</h1>
+                <h1 style={{ margin: "0 0 5px 0" }}>{user.full_name}</h1>
                 <p style={{ margin: 0, color: "#666", fontSize: 14 }}>
-                  Nhân viên tư vấn
+                  {getRoleLabel(user.role)}
                 </p>
               </Col>
+
+              {/* parent/student information is shown in the Thông tin cá nhân tab */}
 
               <Col flex="auto" />
 
@@ -166,6 +227,76 @@ const AccountInfoPage = () => {
               </Col>
             </Row>
 
+            <div style={{ marginTop: 24 }}>
+              {(user.role === "student" && user.parent) && (
+                <div
+                  style={{
+                    padding: 20,
+                    background: "#ffffff",
+                    borderRadius: 12,
+                    boxShadow: "0 8px 24px rgba(0,0,0,0.06)",
+                  }}
+                >
+                  <div style={{ marginBottom: 16, fontSize: 16, fontWeight: 700 }}>
+                    Thông tin phụ huynh
+                  </div>
+                  <Row align="middle" gutter={16}>
+                    <Col>
+                      <Avatar
+                        size={80}
+                        src={user.parent.avatar_link || undefined}
+                        icon={<UserOutlined />}
+                        style={{ border: "2px solid #f0f0f0" }}
+                      />
+                    </Col>
+                    <Col>
+                      <div style={{ fontSize: 18, fontWeight: 700 }}>{user.parent.full_name}</div>
+                      <div style={{ fontSize: 14, color: "#666" }}>ID: {user.parent.id}</div>
+                    </Col>
+                  </Row>
+                </div>
+              )}
+
+              {(user.role === "parent" && user.students && user.students.length > 0) && (
+                <div
+                  style={{
+                    padding: 20,
+                    background: "#ffffff",
+                    borderRadius: 12,
+                    boxShadow: "0 8px 24px rgba(0,0,0,0.06)",
+                  }}
+                >
+                  <div style={{ marginBottom: 16, fontSize: 16, fontWeight: 700 }}>
+                    Danh sách học sinh
+                  </div>
+                  <Row gutter={16}>
+                    {user.students.map((s) => (
+                      <Col key={s.id}>
+                        <div
+                          style={{
+                            padding: 16,
+                            minWidth: 140,
+                            borderRadius: 12,
+                            background: "#fafafa",
+                            textAlign: "center",
+                          }}
+                        >
+                          <Avatar
+                            size={64}
+                            src={s.avatar_link || undefined}
+                            icon={<UserOutlined />}
+                            style={{ border: "2px solid #f0f0f0" }}
+                          />
+                          <div style={{ marginTop: 12, fontWeight: 700 }}>{s.full_name}</div>
+                          <div style={{ fontSize: 12, color: "#999" }}>ID: {s.id}</div>
+                        </div>
+                      </Col>
+                    ))}
+                  </Row>
+                </div>
+              )}
+            </div>
+
             <Tabs
               style={{ marginTop: 30 }}
               items={[
@@ -174,20 +305,40 @@ const AccountInfoPage = () => {
                   label: "Thông tin cá nhân",
                   children: !isEditing ? (
                     <Descriptions bordered column={1}>
-                      <Descriptions.Item label="Họ tên">{user.fullName}</Descriptions.Item>
+                      <Descriptions.Item label="User name">{user.user_name}</Descriptions.Item>
+                      <Descriptions.Item label="Họ tên">{user.full_name}</Descriptions.Item>
                       <Descriptions.Item label="Email">{user.email}</Descriptions.Item>
                       <Descriptions.Item label="Số điện thoại">{user.phone}</Descriptions.Item>
-                      <Descriptions.Item label="Ngày sinh">{user.dob}</Descriptions.Item>
-                      <Descriptions.Item label="Giới tính">{user.gender}</Descriptions.Item>
+                      <Descriptions.Item label="Ngày sinh">{user.birthday}</Descriptions.Item>
+                      <Descriptions.Item label="Giới tính">{user.sex}</Descriptions.Item>
                       <Descriptions.Item label="Địa chỉ">{user.address}</Descriptions.Item>
+
+
+
+                      {(user.role === "parent" || user.role === "teacher") && (
+                        <Descriptions.Item label="Balance">{user.balance}</Descriptions.Item>
+                      )}
+
+                      {user.role === "teacher" && (
+                        <>
+                          <Descriptions.Item label="Description">{user.description}</Descriptions.Item>
+                          <Descriptions.Item label="Thumbnail link">{user.thumbnail_link}</Descriptions.Item>
+                          <Descriptions.Item label="Thumbnail ID">{user.thumbnail_id}</Descriptions.Item>
+                          <Descriptions.Item label="Status">{user.status}</Descriptions.Item>
+                        </>
+                      )}
+
                       <Descriptions.Item label="Chức vụ">
-                        <Tag color="blue">{user.role}</Tag>
+                        <Tag color="blue">{getRoleLabel(user.role)}</Tag>
                       </Descriptions.Item>
                     </Descriptions>
                   ) : (
                     <Form layout="vertical">
+                      <Form.Item label="User name">
+                        <Input name="user_name" value={user.user_name} onChange={handleChange} />
+                      </Form.Item>
                       <Form.Item label="Họ tên">
-                        <Input name="fullName" value={user.fullName} onChange={handleChange} />
+                        <Input name="full_name" value={user.full_name} onChange={handleChange} />
                       </Form.Item>
                       <Form.Item label="Email">
                         <Input name="email" value={user.email} onChange={handleChange} />
@@ -196,10 +347,10 @@ const AccountInfoPage = () => {
                         <Input name="phone" value={user.phone} onChange={handleChange} />
                       </Form.Item>
                       <Form.Item label="Ngày sinh">
-                        <Input name="dob" value={user.dob} onChange={handleChange} />
+                        <Input name="birthday" value={user.birthday} onChange={handleChange} />
                       </Form.Item>
                       <Form.Item label="Giới tính">
-                        <Input name="gender" value={user.gender} onChange={handleChange} />
+                        <Input name="sex" value={user.sex} onChange={handleChange} />
                       </Form.Item>
                       <Form.Item label="Địa chỉ">
                         <Input name="address" value={user.address} onChange={handleChange} />
