@@ -214,13 +214,13 @@ const previewMonthlyTuitionFees = async ({
                 'Coupon not found'
             );
         }
-    }
-    const now = dayjs();
-    if (coupon.start && dayjs(coupon.start).isAfter(now)) {
-        throw new Error('Coupon not yet valid');
-    }
-    if (coupon.end && dayjs(coupon.end).isBefore(now)) {
-        throw new Error('Coupon has expired');
+        const now = dayjs();
+        if (coupon.start && dayjs(coupon.start).isAfter(now)) {
+            throw new Error('Coupon not yet valid');
+        }
+        if (coupon.end && dayjs(coupon.end).isBefore(now)) {
+            throw new Error('Coupon has expired');
+        }
     }
     return aggregate.map(item => ({
         ...item,
@@ -233,120 +233,116 @@ const previewMonthlyTuitionFees = async ({
 };
 /*  req.body
     {
-        "parent_id: 5"
-        "student_ids": [1,2,3],
-        "month": 6,
-        "year": 2026,
+        "parent_id": 5,
+        "student_ids": [1, 2, 3],
+        "months": [
+            { "month": 6, "year": 2026 },
+            { "month": 7, "year": 2026 }
+        ],
         "coupon_id": 1
     }
 */
-const payTuitionFees = async ({
+const payTuitionFeesMultiple = async ({
     parentId,
     studentIds,
-    month,
-    year,
+    months,   // [{ month, year }, ...]
     couponId
 }) => {
-
-    const transaction =
-        await sequelize.transaction();
+    const transaction = await sequelize.transaction();
 
     try {
-
-        const parent =
-            await Parent.findByPk(
-                parentId,
-                {
-                    transaction
-                }
-            );
-
+        // 1. Kiểm tra parent
+        const parent = await Parent.findByPk(parentId, { transaction });
         if (!parent) {
-            throw new Error(
-                'Parent not found'
-            );
+            throw new Error('Parent not found');
         }
 
-        const preview =
-            await previewMonthlyTuitionFees({
-                studentIds,
-                month,
-                year,
-                couponId
-            });
+        // 2. Kiểm tra coupon 1 lần duy nhất cho tất cả các tháng
+        let coupon = null;
+        if (couponId) {
+            coupon = await Coupon.findByPk(couponId);
+            if (!coupon) {
+                throw new Error('Coupon not found');
+            }
+            const now = dayjs();
+            if (coupon.start && dayjs(coupon.start).isAfter(now)) {
+                throw new Error('Coupon not yet valid');
+            }
+            if (coupon.end && dayjs(coupon.end).isBefore(now)) {
+                throw new Error('Coupon has expired');
+            }
+        }
 
-        const totalAmount =
-            preview.reduce(
-                (sum, item) =>
-                    sum +
-                    item.payable_amount,
-                0
-            );
+        // 3. Preview tất cả các tháng
+        // Không truyền couponId vào calculateTuitionAggregate
+        // vì applyCoupon sẽ được xử lý thủ công bên dưới
+        const allPreviews = await Promise.all(
+            months.map(({ month, year }) =>
+                calculateTuitionAggregate({ studentIds, month, year })
+                    .then(aggregate => aggregate.map(item => ({
+                        ...item,
+                        month,
+                        year,
+                        coupon_id: coupon?.id || null,
+                        payable_amount: applyCoupon(
+                            Number(item.actual_listed_tuition_fee),
+                            coupon
+                        )
+                    })))
+            )
+        );
+
+        // 4. Flatten tất cả các tháng thành 1 mảng
+        const allItems = allPreviews.flat();
+
+        // 5. Tính tổng tiền toàn bộ
+        const totalAmount = allItems.reduce(
+            (sum, item) => sum + item.payable_amount,
+            0
+        );
+
+        // 6. Kiểm tra số dư 1 lần — nếu thiếu rollback toàn bộ
         if (parent.balance < totalAmount) {
             throw new Error(
-                'Insufficient balance'
+                `Insufficient balance. Required: ${totalAmount}, Available: ${parent.balance}`
             );
         }
+
+        // 7. Trừ tiền
         parent.balance -= totalAmount;
+        await parent.save({ transaction });
 
-        await parent.save({
-            transaction
-        });
-
-        const startMonth =
-            dayjs()
-                .year(year)
-                .month(month - 1)
-                .startOf('month')
-                .format('YYYY-MM-DD');
-
-        const endMonth =
-            dayjs()
-                .year(year)
-                .month(month - 1)
-                .endOf('month')
-                .format('YYYY-MM-DD');
-
+        // 8. Tạo TuitionFee records cho tất cả tháng
         await TuitionFee.bulkCreate(
-            preview.map(item => ({
-                student_id:
-                    item.student_id,
-
-                class_id:
-                    item.class_id,
-
-                the_first_of_the_month:
-                    startMonth,
-
-                the_end_of_the_month:
-                    endMonth,
-
-                total_reality_lessons:
-                    item.total_reality_lessons,
-
-                actual_listed_tuition_fee:
-                    item.actual_listed_tuition_fee,
-                coupon_id:
-                    item.coupon_id,
-
-                have_student_paid:
-                    true
+            allItems.map(item => ({
+                student_id:                 item.student_id,
+                class_id:                   item.class_id,
+                the_first_of_the_month:     dayjs().year(item.year).month(item.month - 1).startOf('month').format('YYYY-MM-DD'),
+                the_end_of_the_month:       dayjs().year(item.year).month(item.month - 1).endOf('month').format('YYYY-MM-DD'),
+                total_reality_lessons:      item.total_reality_lessons,
+                actual_listed_tuition_fee:  item.actual_listed_tuition_fee,
+                coupon_id:                  item.coupon_id,
+                have_student_paid:          true
             })),
-            {
-                transaction
-            }
+            { transaction,
+                ignoreDuplicates: true 
+             }
         );
 
         await transaction.commit();
 
         return {
             status: 200,
-            data: totalAmount,
-            message: "Pay success"
+            data: {
+                total_amount: totalAmount,
+                total_months: months.length,
+                total_students: studentIds.length,
+                detail: allItems
+            },
+            message: 'Pay success'
         };
 
     } catch (err) {
-
         await transaction.rollback();
         return {
             status: 400,
@@ -354,4 +350,5 @@ const payTuitionFees = async ({
         };
     }
 };
-module.exports = { previewMonthlyTuitionFees, payTuitionFees }
+
+module.exports = { previewMonthlyTuitionFees, payTuitionFees, payTuitionFeesMultiple };

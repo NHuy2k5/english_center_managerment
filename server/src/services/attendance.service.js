@@ -17,22 +17,6 @@ const VALID_STATUS = [
     'unexcused-absence'
 ];
 module.exports = {
-    /*
-        [
-            {
-                "lesson_id": 1,
-                "lesson_name": "Buổi 1",
-                "start_date": "...",
-                "students": [
-                    {   
-                        "student_id": 1,
-                        "full_name": "Nguyễn Văn A",
-                        "status": "attended"
-                    }
-                ]
-            }
-        ]
-    */
     getClassAttendances: async (classId) => {
         /*
         [

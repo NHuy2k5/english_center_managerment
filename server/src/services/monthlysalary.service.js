@@ -155,28 +155,37 @@ const generateMonthlyTeacherSalary = async ({
 const getMonthlyTeacherSalaries = async ({
     month,
     year,
-    teacherIds
+    teacherIds,
+    _queryOptions = null,   // ✅ thêm
+    _pagination = null      // ✅ thêm
 }) => {
-
-    const startDate = dayjs()
+    let startDate = null;
+    if(month && year){
+    startDate = dayjs()
         .year(year)
         .month(month - 1)
         .startOf('month')
         .format('YYYY-MM-DD');
-
+    }
+    const where = _queryOptions?.where ?? {
+        ...(month && year
+            ? { the_first_of_the_month: startDate }
+            : {}
+        ),
+        ...(teacherIds?.length && {
+            teacher_id: { [Op.in]: teacherIds }
+        })
+    };
+    const order = _queryOptions?.order?.length
+        ? _queryOptions.order
+        : [['teacher_id', 'ASC']];
     const salaries = await MonthlyTeacherSalary.findAll({
-        where: {
-
-            the_first_of_the_month:
-                startDate,
-
-            ...(teacherIds?.length && {
-                teacher_id: {
-                    [Op.in]: teacherIds
-                }
-            })
-        },
-
+        where,
+        order,
+        ...(_pagination?.limit != null && {
+            limit: _pagination.limit,
+            offset: _pagination.offset
+        }),
         include: [
             {
                 model: Teacher,
@@ -187,10 +196,6 @@ const getMonthlyTeacherSalaries = async ({
                     attributes: ['full_name', 'phone', 'email']
                 }]
             }
-        ],
-
-        order: [
-            ['teacher_id', 'ASC']
         ]
     });
     if(salaries.length === 0){

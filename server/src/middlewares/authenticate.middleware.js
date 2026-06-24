@@ -1,5 +1,5 @@
 const jwt = require("jsonwebtoken");
-const { User } = require("../models/index");
+const { User, UserRole, Role } = require("../models/index");
 
 const authenticate = async (req, res, next) => {
     try {
@@ -18,7 +18,18 @@ const authenticate = async (req, res, next) => {
             process.env.JWT_SECRET
         );
 
-        const user = await User.findByPk(payload.id);
+        const user = await User.findByPk(payload.id, {
+            include: {
+                model: UserRole,
+                required: true,
+                attributes: ['role_id'],
+                include: [{
+                    model: Role,
+                    required: true,
+                    attributes: ['name'],
+                }]
+            }
+        });
 
         if (!user) {
             return res.status(401).json({
@@ -26,13 +37,17 @@ const authenticate = async (req, res, next) => {
             });
         }
 
-        req.user = user;
+        req.user = {
+            id: user.id,
+            role: user.UserRole.Role.name
+        };
 
         next();
     } catch (error) {
-        return res.status(401).json({
-            message: "Token expired"
-        });
+        if (error.name === 'TokenExpiredError') {
+            return res.status(401).json({ message: 'Token expired' });
+        }
+        return res.status(401).json({ message: 'Invalid token' });
     }
 };
 

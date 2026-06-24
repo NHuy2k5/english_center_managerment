@@ -6,13 +6,9 @@ const authorize = (...roles) => {
             });
         }
 
-        const userRoles = req.user.roles || [];
+        const userRole = req.user.role??'';
 
-        const hasRole = userRoles.some(role =>
-            roles.includes(role)
-        );
-
-        if (!hasRole) {
+        if (!roles.includes(userRole)) {
             return res.status(403).json({
                 message: "Forbidden"
             });

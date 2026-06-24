@@ -101,24 +101,19 @@ const FIELD_MAP = {
         courses: "course",
         registrations: "registration"
     },
+
     // Course
     year_course: "course",
-    total_lessons: "course",
-    listed_price: "course",
     status: "course",
-    discount: "course",
 
     // Class
     total_students: "cLass",
 
     // Lesson
     listed_price: "lesson",
-    class_id: "lesson",
 
     // Monthly Salary
     teacher_id: "monthlyTeacherSalary",
-    the_first_of_the_month: "monthlyTeacherSalary",
-    the_end_of_the_month: "monthlyTeacherSalary",
     total_lessons_teached: "monthlyTeacherSalary",
     monthly_salary: "monthlyTeacherSalary",
     is_teacher_paid: "monthlyTeacherSalary",
@@ -337,6 +332,13 @@ const parseSearch = (req) => {
             }
         }));
 };
+
+const resourceHelper = (resource) => {
+    return (req, res, next) => {
+        req.resource = resource;
+        next();
+    }
+}
 const buildQuery = (req, res, next) => {
 
     req.queryOptions = createQueryOptions();
@@ -351,4 +353,4 @@ const buildQuery = (req, res, next) => {
 
     next();
 };
-module.exports = buildQuery;
+module.exports = {buildQuery, resourceHelper};

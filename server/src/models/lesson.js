@@ -59,6 +59,11 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: true,
       type: DataTypes.STRING(100)
     },
+    status: {
+        allowNull: false,
+        type: DataTypes.STRING(20),
+        defaultValue: 'not_canceled'
+      },
   }, {
     sequelize,
     modelName: 'Lesson',

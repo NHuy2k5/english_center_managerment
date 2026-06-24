@@ -34,16 +34,6 @@ module.exports = {
             class_name: ...
 
         ]}
-        Lessons ban đầu return từ findAll
-        [{
-            id: ...,
-            name: ...,
-            ...,
-            Class: {
-                id: ...,
-                name: ...,
-            }
-        }]
     */
     getLessons: async (lessonQuery = {}) => {
         let rows;
@@ -93,10 +83,10 @@ module.exports = {
                 start: new Date(data.start),
                 end: new Date(data.end),
                 description: data.description ?? null,
-                listed_price: data.listed_price??0,
+                listed_price: data.listed_price ?? 0,
                 class_id: data.class_id,
                 address: data.address ?? null,
-                status: data.status || 'not_canceled', 
+                status: data.status || 'not_canceled',
                 created_at: new Date(),
                 updated_at: new Date()
             }, { transaction: t });
@@ -160,10 +150,12 @@ module.exports = {
             if ('status' in data) {
                 lessonData.status = data.status;
             }
-            await lesson.update( lessonData,
-                {
-                    transaction: t
-                });
+            if (Object.keys(lessonData).length) {
+                await lesson.update(lessonData,
+                    {
+                        transaction: t
+                    });
+            }
             await t.commit();
             const result = await Lesson.findByPk(id, query());
             return {

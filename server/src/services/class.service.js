@@ -4,6 +4,8 @@ const {
     Course,
     Student,
     Teacher,
+    UserRole,
+    Role,
     StudentClass,
     TeacherClass,
     Lesson,
@@ -147,6 +149,14 @@ module.exports = {
     updateClass: async (data, id) => {
         const t = await sequelize.transaction();
         try {
+            const cLass = await Class.findByPk(id, { transaction: t });
+            if (!cLass) {
+                await t.rollback();
+                return {
+                    status: 404,
+                    message: "Class not found"
+                };
+            };
             const classData = {};
             if ('name' in data) {
                 classData.name = data.name;
@@ -172,14 +182,6 @@ module.exports = {
             if ('status' in data) {
                 classData.status = data.status
             }
-            const cLass = await Class.findByPk(id, { transaction: t });
-            if (!cLass) {
-                await t.rollback();
-                return {
-                    status: 404,
-                    message: "Class not found"
-                };
-            };
             await cLass.update(classData,
                 {
                     transaction: t
@@ -199,39 +201,40 @@ module.exports = {
             };
         }
     },
-    addStudentOrTeacherToClass: async (classID, userID, role = 'student') => {
+    addStudentOrTeacherToClass: async (classID, userID) => {
         const t = await sequelize.transaction();
         try {
             let message = [];
-            if (role !== 'student' && role !== 'teacher') {
-                message.push("Role is incorrect");
-                return {
-                    message
-                }
-            }
             // Kiểm tra sự tồn tại của class và student
             const cLass = await Class.findByPk(classID, { transaction: t });
             if (!cLass) {
                 message.push("Class not found");
             };
-            let user;
-            if (role === 'student') {
-                user = await Student.findByPk(userID, { transaction: t });
+            const userRole = await UserRole.findOne({
+                where: {
+                    user_id: userID,
+                },
+                include: [{
+                    model: Role,
+                    required: true,
+                    attributes: ['name']
+                }],
+                transaction: t
+            })
+            if (!userRole) {
+                message.push("User Role not found");
             }
-            else if (role === 'teacher') {
-                user = await Teacher.findByPk(userID, { transaction: t });
+            else if(userRole.Role.name !== 'teacher' && userRole.Role.name !== 'student') {
+                message.push("Role is not student or teacher");
             }
-            if (!user) {
-                message.push("Student or teacher not found");
-            };
-            if (!cLass || !user) {
+            if (!cLass || !userRole || message.length > 0) {
                 await t.rollback();
                 return {
                     status: 404,
                     message
                 };
             }
-            if (role === 'student') {
+            if (userRole.Role.name === 'student') {
                 const existed = await StudentClass.findOne({
                     where: {
                         student_id: userID,
@@ -291,7 +294,7 @@ module.exports = {
                     throw Error("Can not add student to this class because this class is full");
                 }
             }
-            else if (role === 'teacher') {
+            else if (userRole.Role.name === 'teacher') {
                 await TeacherClass.create({
                     teacher_id: userID,
                     class_id: classID,
@@ -312,39 +315,40 @@ module.exports = {
             };
         }
     },
-    removeStudentOrTeacherToClass: async (classID, userID, role) => {
+    removeStudentOrTeacherToClass: async (classID, userID) => {
         const t = await sequelize.transaction();
         try {
             let message = [];
-            if (role !== 'student' && role !== 'teacher') {
-                message.push("Role is incorrect");
-                return {
-                    message
-                }
-            }
             // Kiểm tra sự tồn tại của class và student
             const cLass = await Class.findByPk(classID, { transaction: t });
             if (!cLass) {
                 message.push("Class not found");
             };
-            let user;
-            if (role === 'student') {
-                user = await Student.findByPk(userID, { transaction: t });
+            const userRole = await UserRole.findOne({
+                where: {
+                    user_id: userID,
+                },
+                include: [{
+                    model: Role,
+                    required: true,
+                    attributes: ['name']
+                }],
+                transaction: t
+            })
+            if (!userRole) {
+                message.push("User Role not found");
             }
-            else if (role === 'teacher') {
-                user = await Teacher.findByPk(userID, { transaction: t });
+            else if(userRole.Role.name !== 'teacher' && userRole.Role.name !== 'student') {
+                message.push("Role is not student or teacher");
             }
-            if (!user) {
-                message.push("Student or teacher not found");
-            };
-            if (!cLass || !user) {
+            if (!cLass || !userRole || message.length > 0) {
                 await t.rollback();
                 return {
                     status: 404,
                     message
                 };
             }
-            if (role === 'student') {
+            if (userRole.Role.name === 'student') {
                 const studentInClass = await StudentClass.findOne({
                     where: {
                         class_id: classID,
@@ -352,8 +356,8 @@ module.exports = {
                         left_at: {
                             [Op.is]: null
                         },
-                        transaction: t
-                    }
+                    },
+                    transaction: t
                 });
                 if (!studentInClass) {
                     throw new Error("Student is not in class or left from this class")
@@ -369,7 +373,7 @@ module.exports = {
                     message: "Remove student from class success"
                 }
             }
-            else if (role === 'teacher') {
+            else if (userRole.Role.name === 'teacher') {
                 const status = await TeacherClass.destroy({
                     where: {
                         teacher_id: userID,

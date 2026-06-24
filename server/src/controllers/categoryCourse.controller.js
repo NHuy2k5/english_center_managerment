@@ -1,9 +1,8 @@
-const { getParent, getParents, createParent, updateParent, deleteParent } = require("../services/parent.service");
+const { getCategoryCourse, getCategoryCourses, createCategoryCourse, updateCategoryCourse, deleteCategoryCourse } = require("../services/categoryCourse.service");
 
-const getParentsController = async (req, res) => {
+const getCategoryCoursesController = async (req, res) => {
     try {
-        const query = req.queryOptions;
-        const {status, ...result} = await getParents(query);
+        const {status, ...result} = await getCategoryCourses(query);
         if('data' in result) {
             return res.status(status).json(result);
         }
@@ -13,10 +12,10 @@ const getParentsController = async (req, res) => {
     }
 }
 
-const getParentController = async (req, res) => {
+const getCategoryCourseController = async (req, res) => {
     try {
-        const id = Number(req.params.parentID);
-        const {status, ...result} = await getParent(id);
+        const id = Number(req.params.categoryCourseID);
+        const {status, ...result} = await getCategoryCourse(id);
         if('data' in result) {
             return res.status(status).json(result);
         }
@@ -26,10 +25,10 @@ const getParentController = async (req, res) => {
     }
 }
 
-const addParentController = async (req, res) => {
+const addCategoryCourseController = async (req, res) => {
     try {
         const data = req.body;
-        const {status, ...result} = await createParent(data);
+        const {status, ...result} = await createCategoryCourse(data);
         if('data' in result) {
             return res.status(status).json(result);
         }
@@ -39,11 +38,11 @@ const addParentController = async (req, res) => {
     }
 }
 
-const updateParentController = async (req, res) => {
+const updateCategoryCourseController = async (req, res) => {
     try {
         const data = req.body;
-        const id = Number(req.params.parentID);
-        const {status, ...result} = await updateParent(data, id);
+        const id = Number(req.params.categoryCourseID);
+        const {status, ...result} = await updateCategoryCourse(data, id);
         if('data' in result) {
             return res.status(status).json(result);
         }
@@ -53,14 +52,14 @@ const updateParentController = async (req, res) => {
     }
 }
 
-const deleteParentController = async (req, res) => {
+const deleteCategoryCourseController = async (req, res) => {
     try {
         const data = req.body;
-        const id = Number(req.params.parentID);
-        const result = await deleteParent(id);
+        const id = Number(req.params.categoryCourseID);
+        const result = await deleteCategoryCourse(id);
         return res.status(status).json(result);
     } catch (error) {
         return res.status(500).json({ message: error.message });
     }
 }
-module.exports = {getParentsController, getParentController, addParentController, updateParentController, deleteParentController}
+module.exports = {getCategoryCoursesController, getCategoryCourseController, addCategoryCourseController, updateCategoryCourseController, deleteCategoryCourseController}
