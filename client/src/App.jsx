@@ -3,6 +3,7 @@ import CourseListPage from "./page/CourseListPage";
 import CourseDetailsPage from "./page/CourseDetailsPage";
 import SchedulePage from "./page/SchedulePage";
 import AccountInfoPage from "./page/AccountInfoPage";
+import LoginPage from "./page/LoginPage";
 
 function App() {
   return (
@@ -12,6 +13,7 @@ function App() {
         <Route path="/courses/:courseID" element={<CourseDetailsPage />} />
         <Route path="/schedule" element={<SchedulePage />} />
         <Route path="/account" element={<AccountInfoPage />} />
+        <Route path="/login" element={<LoginPage />} />
       </Routes>
     </BrowserRouter>
   );
