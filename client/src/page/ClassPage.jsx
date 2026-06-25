@@ -1,50 +1,30 @@
-import React, { useState } from "react";
-import { Row, Col, Card, Typography, Space, Button, Badge } from "antd";
+import React, { useState, useEffect } from "react";
+import { Row, Col, Card, Typography, Space, Button, Badge, message as antMessage, Spin } from "antd";
 import { ArrowRightOutlined, BookOutlined, GlobalOutlined, TrophyOutlined, CompassOutlined, TeamOutlined, DesktopOutlined } from "@ant-design/icons";
 import MainLayout from "../layout/MainLayout";
 
 const { Title, Text } = Typography;
 
-const classCategories = [
+const STYLES = [
   {
-    id: "primary",
-    title: "Tiếng Anh Tiểu Học",
-    desc: "Xây dựng nền tảng vững chắc, phát âm chuẩn ngay từ đầu cho các bé từ 6-11 tuổi.",
     icon: <BookOutlined />,
     color: "#ff7875",
     gradient: "linear-gradient(135deg, #ff9a9e 0%, #fecfef 99%, #fecfef 100%)",
-    activeClasses: 5,
-    students: 245
   },
   {
-    id: "secondary",
-    title: "Tiếng Anh THCS",
-    desc: "Ngữ pháp chuyên sâu, kỹ năng toàn diện chuẩn bị cho kỳ thi chuyển cấp.",
     icon: <CompassOutlined />,
     color: "#69b1ff",
     gradient: "linear-gradient(120deg, #a1c4fd 0%, #c2e9fb 100%)",
-    activeClasses: 4,
-    students: 310
   },
   {
-    id: "high",
-    title: "Tiếng Anh THPT",
-    desc: "Đột phá điểm số, ôn thi Đại học với lộ trình cá nhân hóa.",
     icon: <TrophyOutlined />,
     color: "#ffc069",
     gradient: "linear-gradient(120deg, #f6d365 0%, #fda085 100%)",
-    activeClasses: 3,
-    students: 198
   },
   {
-    id: "ielts",
-    title: "Luyện thi IELTS",
-    desc: "Chiến lược làm bài thực chiến, cam kết đầu ra 6.5+ với đội ngũ 8.0+",
     icon: <GlobalOutlined />,
     color: "#b37feb",
     gradient: "linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%)",
-    activeClasses: 4,
-    students: 420
   }
 ];
 
@@ -119,6 +99,46 @@ const CategoryCard = ({ cat }) => {
 };
 
 const ClassPage = () => {
+  const [categories, setCategories] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      setLoading(true);
+      try {
+        const token = localStorage.getItem("accessToken");
+        const res = await fetch("http://localhost:5002/api/v1/category-courses", {
+          headers: {
+            "Authorization": `Bearer ${token}`
+          }
+        });
+        const json = await res.json();
+        if (res.ok && json.data) {
+          const formattedData = json.data.map((cat, index) => {
+            const style = STYLES[index % STYLES.length];
+            return {
+              id: cat.id,
+              title: cat.name,
+              desc: "Quản lý các khóa học và lớp học thuộc danh mục " + cat.name,
+              icon: style.icon,
+              color: style.color,
+              gradient: style.gradient,
+              activeClasses: "?",
+              students: "?"
+            };
+          });
+          setCategories(formattedData);
+        } else {
+          antMessage.error(json.message || "Không thể tải danh sách chương trình");
+        }
+      } catch (err) {
+        antMessage.error("Lỗi kết nối máy chủ");
+      }
+      setLoading(false);
+    };
+    fetchCategories();
+  }, []);
+
   return (
     <MainLayout selectedKey="class" title="Quản lý Khóa học & Lớp học">
       <div style={{ padding: "0 10px" }}>
@@ -133,13 +153,19 @@ const ClassPage = () => {
         </div>
 
         {/* CARDS GRID */}
-        <Row gutter={[24, 24]}>
-          {classCategories.map(cat => (
-            <Col xs={24} sm={12} xl={6} key={cat.id}>
-              <CategoryCard cat={cat} />
-            </Col>
-          ))}
-        </Row>
+        {loading ? (
+          <div style={{ textAlign: 'center', padding: '50px 0' }}>
+            <Spin size="large" />
+          </div>
+        ) : (
+          <Row gutter={[24, 24]}>
+            {categories.map(cat => (
+              <Col xs={24} sm={12} xl={6} key={cat.id}>
+                <CategoryCard cat={cat} />
+              </Col>
+            ))}
+          </Row>
+        )}
       </div>
     </MainLayout>
   );

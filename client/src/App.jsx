@@ -6,8 +6,7 @@ import StudentPage from "./page/StudentPage";
 import PaymentPage from "./page/PaymentPage";
 import TeacherPage from "./page/TeacherPage";
 import PayrollPage from "./page/PayrollPage";
-import SchedulePage from "./page/SchedulePage";
-import AccountInfoPage from "./page/AccountInfoPage";
+
 import ClassPage from "./page/ClassPage";
 import ClassListPage from "./page/ClassListPage";
 
@@ -25,9 +24,7 @@ function App() {
         <Route path="/class" element={<ClassPage />} />
         <Route path="/class/:categoryId" element={<ClassListPage />} />
         
-        {/* Preview Routes */}
-        <Route path="/schedule" element={<SchedulePage />} />
-        <Route path="/account-info" element={<AccountInfoPage />} />
+
       </Routes>
     </BrowserRouter>
   );

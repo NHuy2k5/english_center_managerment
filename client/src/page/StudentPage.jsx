@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Row,
   Col,
@@ -53,12 +53,48 @@ const StudentPage = () => {
   const [selectedTuitionStudent, setSelectedTuitionStudent] = useState(null);
 
   const [selectedEditStudent, setSelectedEditStudent] = useState(null);
+  const [students, setStudents] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchStudents = async () => {
+      setLoading(true);
+      try {
+        const token = localStorage.getItem("accessToken");
+        const res = await fetch("http://localhost:5002/api/v1/students", {
+          headers: {
+            "Authorization": `Bearer ${token}`
+          }
+        });
+        const json = await res.json();
+        if (res.ok && json.data) {
+          const formattedData = json.data.map((student, index) => {
+            const mockParent = mockStudents[index % mockStudents.length] || {};
+            return {
+              key: student.id,
+              ...student,
+              parentName: student.parent?.full_name || mockParent.parentName || "Chưa cập nhật",
+              parentPhone: mockParent.parentPhone || "N/A",
+              tuitionOwed: mockParent.tuitionOwed
+            };
+          });
+          setStudents(formattedData);
+        } else {
+          antMessage.error(json.message || "Không thể tải danh sách học viên");
+        }
+      } catch (err) {
+        antMessage.error("Lỗi kết nối máy chủ");
+      }
+      setLoading(false);
+    };
+    fetchStudents();
+  }, []);
 
   const columns = [
     {
       title: "Học viên",
-      dataIndex: "name",
-      key: "name",
+      dataIndex: "full_name",
+      key: "full_name",
       render: (text, record) => (
         <Space>
           <Avatar
@@ -69,7 +105,7 @@ const StudentPage = () => {
               fontSize: 13,
             }}
           >
-            {record.name.split(" ").pop()[0]}
+            {record.full_name ? record.full_name.split(" ").pop()[0] : "H"}
           </Avatar>
           <div>
             <div style={{ fontWeight: 600, color: "#0f1c3f", fontSize: 13 }}>
@@ -138,7 +174,7 @@ const StudentPage = () => {
             </Tooltip>
             <Tooltip title="Lưu trữ">
               <Button type="text" icon={<InboxOutlined />} shape="circle" style={{ color: "#722ed1" }}
-                onClick={() => antMessage.info(`Lưu trữ: ${record.name}`)} />
+                onClick={() => antMessage.info(`Lưu trữ: ${record.full_name}`)} />
             </Tooltip>
           </Space>
         );
@@ -223,7 +259,8 @@ const StudentPage = () => {
 
         <Table
           columns={columns}
-          dataSource={mockStudents}
+          dataSource={students}
+          loading={loading}
           pagination={{ pageSize: 5, showTotal: (total, range) => `Hiển thị ${range[0]}-${range[1]} của ${total} học viên` }}
           rowKey="key"
           style={{ fontSize: 13 }}

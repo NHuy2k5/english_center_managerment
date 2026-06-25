@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import dayjs from "dayjs";
 import {
   Modal,
   Form,
@@ -63,11 +64,12 @@ const AddStudentDrawer = ({ open, onClose, editRecord }) => {
     if (open) {
       if (editRecord) {
         form.setFieldsValue({
-          fullName: editRecord.name,
+          fullName: editRecord.full_name,
           phone: editRecord.phone,
           email: editRecord.email,
-          username: editRecord.username,
+          username: editRecord.user_name,
           password: editRecord.password,
+          birthday: editRecord.birthday ? dayjs(editRecord.birthday) : undefined,
           parentName: editRecord.parentName,
           parentPhone: editRecord.parentPhone,
           parentUsername: editRecord.parentUsername,

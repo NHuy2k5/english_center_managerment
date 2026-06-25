@@ -29,7 +29,7 @@ export default function LoginPage({ onLoginSuccess }) {
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          username: email, // Dùng email state cho trường username
+          identifier: email, // Backend expect identifier, frontend uses email state
           password: password
         })
       });
@@ -43,9 +43,9 @@ export default function LoginPage({ onLoginSuccess }) {
       }
 
       // Lưu trữ token vào localStorage
-      localStorage.setItem("accessToken", data.metadata.tokens.accessToken);
-      localStorage.setItem("refreshToken", data.metadata.tokens.refreshToken);
-      localStorage.setItem("userRole", data.metadata.user.role);
+      localStorage.setItem("accessToken", data.access_token);
+      localStorage.setItem("refreshToken", data.refresh_token);
+      localStorage.setItem("userRole", data.user.role);
       
       setIsLoading(false);
       

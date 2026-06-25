@@ -1,6 +1,7 @@
 import React from 'react';
 import { Modal, Avatar, Typography, Row, Col, Card, Tag, Divider, Space } from 'antd';
 import { UserOutlined, PhoneOutlined, MailOutlined, CheckCircleOutlined, WarningOutlined, CalendarOutlined, KeyOutlined, LockOutlined, IdcardOutlined } from '@ant-design/icons';
+import dayjs from 'dayjs';
 
 const { Title, Text } = Typography;
 
@@ -33,12 +34,12 @@ const StudentInfoModal = ({ open, onClose, student }) => {
                 boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
               }}
             >
-              {student?.name?.trim().split(' ').pop()[0] || 'H'}
+              {student?.full_name ? student.full_name.trim().split(' ').pop()[0] : 'H'}
             </Avatar>
             
             {/* BASIC INFO */}
             <div style={{ marginLeft: 120, paddingTop: 12 }}>
-              <Title level={3} style={{ margin: 0, color: '#0f1c3f' }}>{student.name}</Title>
+              <Title level={3} style={{ margin: 0, color: '#0f1c3f' }}>{student.full_name}</Title>
               <Text type="secondary" style={{ fontSize: 14 }}>Mã HV: {student.id}</Text>
               <div style={{ marginTop: 8 }}>
                 {student.tuitionOwed ? (
@@ -75,7 +76,7 @@ const StudentInfoModal = ({ open, onClose, student }) => {
                     </div>
                     <div>
                       <Text type="secondary" style={{ fontSize: 12 }}>Tài khoản học sinh</Text>
-                      <div style={{ fontWeight: 600, fontSize: 14 }}>{student.username || 'Chưa cấp'}</div>
+                      <div style={{ fontWeight: 600, fontSize: 14 }}>{student.user_name || 'Chưa cấp'}</div>
                       <div style={{ fontSize: 12, color: '#8c8c8c' }}><LockOutlined /> ******</div>
                     </div>
                   </Space>
@@ -90,7 +91,7 @@ const StudentInfoModal = ({ open, onClose, student }) => {
                     </div>
                     <div>
                       <Text type="secondary" style={{ fontSize: 12 }}>Ngày sinh</Text>
-                      <div style={{ fontWeight: 600, fontSize: 14 }}>{student.dob || 'Chưa cập nhật'}</div>
+                      <div style={{ fontWeight: 600, fontSize: 14 }}>{student.birthday ? dayjs(student.birthday).format('DD/MM/YYYY') : 'Chưa cập nhật'}</div>
                     </div>
                   </Space>
                 </Card>
