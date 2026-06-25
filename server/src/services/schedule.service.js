@@ -13,6 +13,7 @@ const { transformScheduleStudent } = require('../transformers/scheduleStudent.tr
 const { getAssignments } = require("./assignment.service");
 const studentLessonInclude = [
     {
+        paranoid: false,
         model: Student,
         required: true,
         attributes: ['id'],

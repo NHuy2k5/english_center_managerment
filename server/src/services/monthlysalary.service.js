@@ -180,6 +180,7 @@ const getMonthlyTeacherSalaries = async ({
         ? _queryOptions.order
         : [['teacher_id', 'ASC']];
     const salaries = await MonthlyTeacherSalary.findAll({
+        paranoid: false,
         where,
         order,
         ...(_pagination?.limit != null && {

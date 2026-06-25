@@ -35,6 +35,7 @@ module.exports = {
         ]
     */
         const lessons = await Lesson.findAll({
+            paranoid: false,
             where: {
                 class_id: classId
             },
@@ -73,6 +74,7 @@ module.exports = {
     },
     getLessonAttendance: async (lessonId) => {
         const lesson = await Lesson.findByPk(lessonId, {
+            paranoid: false,
             attributes: [
                 'id',
                 'name',

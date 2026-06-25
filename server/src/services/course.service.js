@@ -12,6 +12,7 @@ const { transformCourse } = require('../transformers/course.transformer');
 const query = (courseQuery = {}) => {
     const hasWhere = where => where && Object.keys(where).length > 0;
     return {
+        paranoid: false,
         distinct: true,
         ...(courseQuery.limit != null && { limit: courseQuery.limit }),
         ...(courseQuery.offset != null && { offset: courseQuery.offset }),

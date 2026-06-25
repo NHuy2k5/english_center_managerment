@@ -28,6 +28,7 @@ const query = (classQuery = {}) => {
         classQuery.cLass?.attributes?.length > 0 ||
         classQuery.cLass?.virtualAttributes?.length > 0;
     return {
+        paranoid: false,
         distinct: true,
         ...(classQuery.limit != null && { limit: classQuery.limit }),
         ...(classQuery.offset != null && { offset: classQuery.offset }),

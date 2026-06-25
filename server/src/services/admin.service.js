@@ -9,6 +9,7 @@ const { transformAdmin } = require('../transformers/admin.transformer');
 const query = (adminQuery = {}) => {
     const hasWhere = where => where && Object.keys(where).length > 0;
     return {
+        paranoid: false,
         distinct: true,
         ...(adminQuery.limit != null && { limit: adminQuery.limit }),
         ...(adminQuery.offset != null && { offset: adminQuery.offset }),

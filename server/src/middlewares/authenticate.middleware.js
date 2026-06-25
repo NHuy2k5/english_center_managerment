@@ -18,28 +18,24 @@ const authenticate = async (req, res, next) => {
             process.env.JWT_SECRET
         );
 
-        const user = await User.findByPk(payload.id, {
-            attributes: {exclude: ['password']},
-            include: {
-                model: UserRole,
-                attributes: [],
-                include: [{
-                    model: Role,
-                    attributes: ['name'],
-                }]
-            }
-        });
+        const user = await User.findByPk(payload.id);
 
         if (!user) {
             return res.status(401).json({
                 message: "User not found"
             });
         }
-
+        const userRole = await UserRole.findOne({
+            where: { user_id: user.id },
+            include: [{
+                model: Role,
+                attributes: ['name']
+            }]
+        });
         const userData = user.toJSON();
         req.user = {
             ...userData,
-            role: userData.UserRoles?.[0]?.Role?.name || null
+            role: userRole?.name || null
         };
 
         next();

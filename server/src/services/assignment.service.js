@@ -9,6 +9,7 @@ const { transformAssignment } = require('../transformers/assignment.transformer'
 const query = (assignmentQuery = {}) => {
     const hasWhere = where => where && Object.keys(where).length > 0;
     return {
+        paranoid: false,
         distinct: true,
         ...(assignmentQuery.limit != null && { limit: assignmentQuery.limit }),
         ...(assignmentQuery.offset != null && { offset: assignmentQuery.offset }),

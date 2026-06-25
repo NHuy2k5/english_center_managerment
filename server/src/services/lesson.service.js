@@ -4,6 +4,7 @@ const { transformLesson } = require('../transformers/lesson.transformer');
 const query = (lessonQuery = {}) => {
     const hasWhere = where => where && Object.keys(where).length > 0;
     return {
+        paranoid: false,
         distinct: true,
         ...(lessonQuery.limit != null && { limit: lessonQuery.limit }),
         ...(lessonQuery.offset != null && { offset: lessonQuery.offset }),

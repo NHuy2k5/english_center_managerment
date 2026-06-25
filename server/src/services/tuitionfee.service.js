@@ -43,6 +43,7 @@ const calculateTuitionAggregate = async ({
     const tuition =
         await StudentLesson.findAll({
             raw: true,
+            paranoid: false,
             where: {
                 student_id: {
                     [Op.in]: studentIds

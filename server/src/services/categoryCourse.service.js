@@ -2,6 +2,7 @@ const {CategoryCourse, sequelize } = require("../models/index");
 const query = (categoryCourseQuery={}) => {
     const hasWhere = where => where && Object.keys(where).length > 0;
     return {
+            paranoid: false,
             ...(categoryCourseQuery.limit != null && { limit: categoryCourseQuery.limit }),
             ...(categoryCourseQuery.offset != null && { offset: categoryCourseQuery.offset }),
             ...(categoryCourseQuery.categoryCourse?.attributes?.length && { attributes: categoryCourseQuery.categoryCourse.attributes }),

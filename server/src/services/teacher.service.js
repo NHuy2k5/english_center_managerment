@@ -11,6 +11,7 @@ const { transformTeacher } = require("../transformers/teacher.transformer");
 const query = (teacherQuery = {}) => {
     const hasWhere = where => where && Object.keys(where).length > 0;
     return {
+        paranoid: false,
         distinct: true,
         ...(teacherQuery.limit != null && { limit: teacherQuery.limit }),
         ...(teacherQuery.offset != null && { offset: teacherQuery.offset }),

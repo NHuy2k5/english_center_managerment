@@ -3,6 +3,7 @@ const { transformRegistration } = require('../transformers/registration.transfor
 const query = (registrationQuery={}) => {
     const hasWhere = where => where && Object.keys(where).length > 0;
     return {
+            paranoid: false,
             distinct: true,
             ...(registrationQuery.limit != null && { limit: registrationQuery.limit }),
             ...(registrationQuery.offset != null && { offset: registrationQuery.offset }),

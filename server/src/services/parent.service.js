@@ -12,6 +12,7 @@ const { transformParent } = require('../transformers/parent.transformer');
 const query = (parentQuery={}) => {
     const hasWhere = where => where && Object.keys(where).length > 0;
     return {
+            paranoid: false,
             distinct: true,
             ...(parentQuery.limit != null && { limit: parentQuery.limit }),
             ...(parentQuery.offset != null && { offset: parentQuery.offset }),

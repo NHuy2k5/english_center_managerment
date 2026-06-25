@@ -3,6 +3,7 @@ const { Coupon, TuitionFee, ParentCoupon, sequelize } = require("../models/index
 const query = (couponQuery = {}) => {
     const hasWhere = where => where && Object.keys(where).length > 0;
     return {
+        paranoid: false,
         ...(couponQuery.limit != null && { limit: couponQuery.limit }),
         ...(couponQuery.offset != null && { offset: couponQuery.offset }),
         ...(couponQuery.coupon?.attributes?.length && { attributes: couponQuery.coupon.attributes }),
