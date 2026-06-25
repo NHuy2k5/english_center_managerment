@@ -21,11 +21,43 @@ export default function LoginPage({ onLoginSuccess }) {
     }
 
     setIsLoading(true);
-    // Giả lập gọi API đăng nhập (sẽ thay bằng API thật sau)
-    setTimeout(() => {
+    
+    try {
+      const response = await fetch("http://localhost:5002/api/v1/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          username: email, // Dùng email state cho trường username
+          password: password
+        })
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
+        setError(data.message || "Tên đăng nhập hoặc mật khẩu không chính xác!");
+        setIsLoading(false);
+        return;
+      }
+
+      // Lưu trữ token vào localStorage
+      localStorage.setItem("accessToken", data.metadata.tokens.accessToken);
+      localStorage.setItem("refreshToken", data.metadata.tokens.refreshToken);
+      localStorage.setItem("userRole", data.metadata.user.role);
+      
       setIsLoading(false);
-      if (onLoginSuccess) onLoginSuccess();
-    }, 1200);
+      
+      if (onLoginSuccess) {
+        onLoginSuccess();
+      } else {
+        navigate("/dashboard");
+      }
+    } catch (err) {
+      setError("Không thể kết nối đến máy chủ. Vui lòng thử lại sau.");
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -82,8 +114,8 @@ export default function LoginPage({ onLoginSuccess }) {
                 <Mail className="w-4 h-4 text-blue-300/70" />
               </div>
               <input
-                type="email"
-                placeholder="Email của bạn"
+                type="text"
+                placeholder="Tên đăng nhập hoặc Email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full bg-white/10 border border-white/20 text-white placeholder-blue-200/50 rounded-2xl px-4 py-3.5 pl-11 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-400/30 transition-all duration-300 text-sm"
