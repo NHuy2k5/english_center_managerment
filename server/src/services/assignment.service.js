@@ -3,9 +3,7 @@ const { Assignment,
     User,
     Role,
     Lesson,
-    AssignmentClass,
-    AssignmentLesson,
-    TuitionFee,
+    Class,
     sequelize } = require("../models/index");
 const { transformAssignment } = require('../transformers/assignment.transformer');
 const query = (assignmentQuery = {}) => {
@@ -36,7 +34,7 @@ const query = (assignmentQuery = {}) => {
                 model: Lesson,
                 required: true,
                 attributes: {
-                    exclude: ['listed_price', class_id]
+                    exclude: ['listed_price', 'class_id']
                 },
                 include: [{
                     model: Class,
@@ -53,7 +51,7 @@ const createAssignment = async (data) => {
         message = [];
         const lesson = Lesson.findOne({
             where: {
-                lesson_id: data.lesson_id
+                id: data.lesson_id
             },
             transaction: t
         });
@@ -81,7 +79,7 @@ const createAssignment = async (data) => {
             updated_at: new Date()
         }, { transaction: t });
         await t.commit();
-        const result = await Assignment.findByPk(user.id, query());
+        const result = await Assignment.findByPk(assignment.id, query());
 
         return {
             status: 201,
@@ -129,84 +127,54 @@ const deleteAssignment = async (id) => {
         };
     }
 }
-const changeTeacher = async (newTeacherData, oldTeacherID, lessonID) => {
-    /*newTeacherData = {
-        teacher_id: ...,
-        pay_per_lesson: ...
-    } 
-    */
+const changeTeacher = async (newTeacherData, assignmentID) => {
     const t = await sequelize.transaction();
     try {
-        if (newTeacherData.teacher_id == oldTeacherID) {
-            throw new Error('New Teacher ID must be different old teacher ID');
+        if (!newTeacherData.teacher_id) {
+            throw new Error('New teacher_id is required');
         }
-        const message = [];
-        const [oldTeacher, newTeacher, lesson] = await Promise.all([
-            Teacher.findByPk(oldTeacherID, { transaction: t }),
-            Teacher.findByPk(newTeacherData.teacher_id, { transaction: t }),
-            Lesson.findByPk(lessonID, { transaction: t })
-        ]);
-        if (!oldTeacher) {
-            message.push('Old teacher is not found')
-        }
-        if (!newTeacher) {
-            message.push('New Teacher is not found')
-        }
-        if (!lesson) {
-            message.push('Lesson is not found')
-        }
-        const oldAssignment = await Assignment.findOne({
-            where: {
-                lesson_id: lessonID,
-                teacher_id: oldTeacherID
-            },
-            transaction: t
-        })
+
+        const oldAssignment = await Assignment.findByPk(assignmentID, { transaction: t });
         if (!oldAssignment) {
-            message.push('Old Assignment is not found')
+            return { status: 404, message: 'Assignment not found' };
         }
-        if (!oldTeacher || !newTeacher || !lesson || !oldAssignment) {
-            await t.rollback();
-            return {
-                status: 404,
-                message,
-            };
+
+        if (newTeacherData.teacher_id == oldAssignment.teacher_id) {
+            throw new Error('New Teacher ID must be different from old teacher ID');
         }
-        // Kiểm tra xem giáo viên mới dạy buổi học đó chưa
-        const existedAssignment =
-            await Assignment.findOne({
+
+        const [newTeacher, existedAssignment] = await Promise.all([
+            Teacher.findByPk(newTeacherData.teacher_id, { transaction: t }),
+            Assignment.findOne({
                 where: {
-                    lesson_id: lessonID,
+                    lesson_id: oldAssignment.lesson_id,
                     teacher_id: newTeacherData.teacher_id
                 },
                 transaction: t
-            });
-        if (existedAssignment) {
-            throw new Error(
-                'New teacher already assigned to lesson'
-            );
+            })
+        ]);
+
+        if (!newTeacher) {
+            return { status: 404, message: 'New teacher not found' };
         }
-        // Cập nhật
+        if (existedAssignment) {
+            throw new Error('New teacher already assigned to this lesson');
+        }
+
         await oldAssignment.update({
             teacher_id: newTeacherData.teacher_id,
             status: 'substitute_teach',
-            pay_per_lesson: newTeacherData.pay_per_lesson,
-        }, {
-            transaction: t
-        });
+            pay_per_lesson: newTeacherData.pay_per_lesson
+        }, { transaction: t });
+
         await t.commit();
-        return {
-            status: 200,
-            message: "Change teacher success"
-        };
+        return { status: 200, message: 'Change teacher success' };
+
     } catch (error) {
         await t.rollback();
-        return {
-            status: 400,
-            message: error.message
-        };
+        return { status: 400, message: error.message };
     }
-}
+};
 // Lấy danh sách 
 /*
     [{
@@ -261,7 +229,7 @@ const getAssignments = async (assignmentQuery = {}) => {
         count,
         message: "Assignments found"
     };
-},
+};
 const getAssignment = async (id) => {
     const assignment = await Assignment.findByPk(id, query())
     if (!assignment) {
@@ -277,5 +245,5 @@ const getAssignment = async (id) => {
     }
 };
 module.exports = {
-    createAssignment, getAssignment, getAssignments, changeTeacher
+    createAssignment, getAssignment, getAssignments, changeTeacher, deleteAssignment
 }

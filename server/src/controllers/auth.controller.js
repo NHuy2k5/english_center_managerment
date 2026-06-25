@@ -1,4 +1,8 @@
-const { login, logout, refreshToken } = require('../services/auth.service')
+const { getStudent } = require('../services/student.service');
+const { getTeacher } = require('../services/teacher.service');
+const { getParent } = require('../services/parent.service');
+const { login, logout, refreshToken } = require('../services/auth.service');
+const { getAdmin } = require('../services/admin.service');
 module.exports = {
     logIn: async (req, res) => {
         try {
@@ -41,6 +45,31 @@ module.exports = {
             res.json(400).json({
                 message: error.message
             })
+        }
+    },
+    getMe: async (req, res) => {
+        try {
+            const { role, id } = req.user;
+            let profileResult = null;
+
+            if (role === 'student') {
+                profileResult = await getStudent(id);
+            } else if (role === 'teacher') {
+                profileResult = await getTeacher(id);
+            } else if (role === 'parent') {
+                profileResult = await getParent(id);
+            } else if (role === 'admin') {
+                profileResult = await getAdmin(id);
+            }
+            return res.status(200).json({
+                data: {
+                    user: req.user,
+                    profile: profileResult?.data || null
+                }
+            });
+
+        } catch (err) {
+            return res.status(500).json({ message: err.message });
         }
     }
 }

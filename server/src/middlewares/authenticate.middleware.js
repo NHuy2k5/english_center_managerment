@@ -19,13 +19,12 @@ const authenticate = async (req, res, next) => {
         );
 
         const user = await User.findByPk(payload.id, {
+            attributes: {exclude: ['password']},
             include: {
                 model: UserRole,
-                required: true,
-                attributes: ['role_id'],
+                attributes: [],
                 include: [{
                     model: Role,
-                    required: true,
                     attributes: ['name'],
                 }]
             }
@@ -37,9 +36,10 @@ const authenticate = async (req, res, next) => {
             });
         }
 
+        const userData = user.toJSON();
         req.user = {
-            id: user.id,
-            role: user.UserRole.Role.name
+            ...userData,
+            role: userData.UserRoles?.[0]?.Role?.name || null
         };
 
         next();

@@ -1,6 +1,5 @@
 const filterTeacherByRole = (req, res, next) => {
-    const userRole = req.user?.role || '';
-    const isAdmin = userRole === 'admin';
+    const isAdmin = req.user?.role === 'admin';
     if (!isAdmin) {
         // Chỉ xem được teacher public
         req.queryOptions.teacher.where.status = 'public';

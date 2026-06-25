@@ -1,7 +1,6 @@
 // Tài khoản nào cũng có thể thực hiện chức năng, nhưng mà phân quyền
 const express = require('express');
-const userController = require('../controllers/admin.controller');
-const { logOut, logIn, refresh } = require('../controllers/auth.controller');
+const { logOut, logIn, refresh, getMe } = require('../controllers/auth.controller');
 const { resourceHelper, buildQuery } = require('../middlewares/query.middleware');
 const authenticate = require('../middlewares/authenticate.middleware');
 const authorize = require('../middlewares/authorize.middleware');
@@ -31,6 +30,19 @@ const {createClassSchema, updateClassSchema} = require('../validators/clsss.vali
 const {createLessonSchema, updateLessonSchema} = require('../validators/lesson.validator')
 const {getTuitionFeesController, payTuitionFeesMultipleController, previewTuitionFeesController} = require('../controllers/tuitionfee.controller')
 const {getSchedulesController} = require('../controllers/schedule.controller')
+const {
+    getAssignmentsController,
+    getAssignmentController,
+    createAssignmentController,
+    deleteAssignmentController,
+    changeTeacherController
+} = require('../controllers/assignment.controller');
+const {
+    getClassAttendancesController,
+    getLessonAttendanceController,
+    updateLessonAttendanceController
+} = require('../controllers/attendance.controller');
+
 
 const router = express.Router();
 
@@ -213,7 +225,7 @@ router.patch(
     authenticate,
     authorize('admin'),
     validate(updateCouponSchema),
-    addCouponController
+    updateCouponController
 )
 router.delete(
     '/coupons/:couponID',
@@ -225,6 +237,7 @@ router.delete(
 // category-courses
 router.get(
     '/category-courses',
+    optionalAuthenticate,
     getCategoryCoursesController
 )
 router.post(
@@ -335,12 +348,14 @@ router.post(
 //lessons
 router.get(
     '/courses/:courseID/classes/:classID/lessons',
+    optionalAuthenticate,
     resourceHelper('lessons'),
     buildQuery,
     getLessonsController
 )
 router.get(
     '/courses/:courseID/classes/:classID/lessons/:lessonID',
+    optionalAuthenticate,
     getLessonController
 )
 router.post(
@@ -354,16 +369,76 @@ router.patch(
     '/courses/:courseID/classes/:classID/lessons/:lessonID',
     authenticate,
     authorize('admin'),
-    validate(createLessonSchema),
+    validate(updateLessonSchema),
     updateLessonController
 )
 
 // schedule
 router.get(
-    '/tuition-fees',
+    '/schedule',
     authenticate,
     authorize('student', 'parent', 'teacher'),
     getSchedulesController
+);
+
+//assignments
+router.get(
+    '/assignments',
+    authenticate,
+    authorize('admin'),
+    resourceHelper('assignments'),
+    buildQuery,
+    getAssignmentsController
+);
+
+router.get(
+    '/assignments/:assignmentID',
+    authenticate,
+    authorize('admin'),
+    getAssignmentController
+);
+
+router.post(
+    '/assignments',
+    authenticate,
+    authorize('admin'),
+    createAssignmentController
+);
+
+router.delete(
+    '/assignments/:assignmentID',
+    authenticate,
+    authorize('admin'),
+    deleteAssignmentController
+);
+
+router.patch(
+    '/assignments/:assignmentID/change-teacher',
+    authenticate,
+    authorize('admin'),
+    changeTeacherController
+);
+
+//Attendance
+router.get(
+    '/classes/:classID/attendances',
+    authenticate,
+    authorize('admin', 'teacher'),
+    getClassAttendancesController
+);
+
+router.get(
+    '/lessons/:lessonID/attendance',
+    authenticate,
+    authorize('admin', 'teacher'),
+    getLessonAttendanceController
+);
+
+router.put(
+    '/lessons/:lessonID/attendance',
+    authenticate,
+    authorize('admin', 'teacher'),
+    updateLessonAttendanceController
 );
 
 // tuition fees:
@@ -383,7 +458,7 @@ router.post(
     resourceHelper('tuitionfees'),
     payTuitionFeesMultipleController
 );
-router.get(
+router.post(
     '/tuition-fees/preview',
     authenticate,
     authorize('admin', 'parent'),
