@@ -11,6 +11,11 @@ export const mockStudents = [
     parentName: "Nguyễn Văn Hùng",
     parentPhone: "0987654321",
     status: "active",
+    username: "lan764",
+    password: "HR764",
+    parentUsername: "hùng930",
+    parentPassword: "LZ930",
+    dob: "10/10/2010",
     tuitionOwed: true
   },
   { 
@@ -25,6 +30,11 @@ export const mockStudents = [
     parentName: "Trần Thị Mai",
     parentPhone: "0976543210",
     status: "active",
+    username: "khoa862",
+    password: "GN862",
+    parentUsername: "mai218",
+    parentPassword: "QK218",
+    dob: "07/04/2013",
     tuitionOwed: true
   },
   { 
@@ -39,6 +49,11 @@ export const mockStudents = [
     parentName: "Lê Văn Bốn",
     parentPhone: "0965432109",
     status: "active",
+    username: "hoa695",
+    password: "LY695",
+    parentUsername: "bốn388",
+    parentPassword: "LD388",
+    dob: "19/12/2011",
     tuitionOwed: false
   },
   { 
@@ -53,6 +68,11 @@ export const mockStudents = [
     parentName: "Phạm Hữu Phát",
     parentPhone: "0954321098",
     status: "reserved",
+    username: "đức948",
+    password: "ET948",
+    parentUsername: "phát894",
+    parentPassword: "JG894",
+    dob: "03/04/2011",
     tuitionOwed: true
   },
   { 
@@ -67,6 +87,11 @@ export const mockStudents = [
     parentName: "Hoàng Văn Nam",
     parentPhone: "0943210987",
     status: "active",
+    username: "tú886",
+    password: "TD886",
+    parentUsername: "nam391",
+    parentPassword: "KE391",
+    dob: "16/08/2014",
     tuitionOwed: false
   },
   { 
@@ -81,6 +106,11 @@ export const mockStudents = [
     parentName: "Đỗ Thị Xuân",
     parentPhone: "0932109876",
     status: "active",
+    username: "bích390",
+    password: "QN390",
+    parentUsername: "xuân258",
+    parentPassword: "AD258",
+    dob: "20/10/2012",
     tuitionOwed: true
   },
   { 
@@ -95,6 +125,11 @@ export const mockStudents = [
     parentName: "Vũ Quang Tùng",
     parentPhone: "0921098765",
     status: "active",
+    username: "minh625",
+    password: "HH625",
+    parentUsername: "tùng342",
+    parentPassword: "KD342",
+    dob: "06/04/2012",
     tuitionOwed: false
   },
   { 
@@ -109,6 +144,150 @@ export const mockStudents = [
     parentName: "Bùi Văn Long",
     parentPhone: "0910987654",
     status: "reserved",
+    username: "thanh434",
+    password: "GG434",
+    parentUsername: "long105",
+    parentPassword: "OH105",
+    dob: "13/09/2013",
     tuitionOwed: true
   },
+];
+
+
+export const mockPayments = [
+  {
+    key: "1",
+    student_name: "Nguyễn Thị Lan",
+    class_name: "7A",
+    course_name: "pre ielts",
+    the_first_of_the_month: "2026-06-01",
+    the_end_of_the_month: "2026-06-30",
+    total_reality_lessons: 12,
+    actual_listed_tuition_fee: 3000000,
+    coupon: { code: "SUMMER10", discount: 200000 },
+    have_student_paid: false,
+    parent_name: "Nguyễn Văn Hùng",
+    balance: 5000000
+  },
+  {
+    key: "2",
+    student_name: "Trần Minh Khoa",
+    class_name: "12C",
+    course_name: "4.5-5.5",
+    the_first_of_the_month: "2026-06-01",
+    the_end_of_the_month: "2026-06-30",
+    total_reality_lessons: 8,
+    actual_listed_tuition_fee: 2400000,
+    coupon: null,
+    have_student_paid: true,
+    parent_name: "Trần Văn Cường",
+    balance: 100000
+  },
+  {
+    key: "3",
+    student_name: "Lê Thị Hoa",
+    class_name: "3B",
+    course_name: "5.5-6.5",
+    the_first_of_the_month: "2026-05-01",
+    the_end_of_the_month: "2026-05-31",
+    total_reality_lessons: 10,
+    actual_listed_tuition_fee: 2500000,
+    coupon: { code: "LOYAL5", discount: 100000 },
+    have_student_paid: true,
+    parent_name: "Lê Văn Tám",
+    balance: 1500000
+  },
+  {
+    key: "4",
+    student_name: "Phạm Văn Đức",
+    class_name: "8A",
+    course_name: "6.5+",
+    the_first_of_the_month: "2026-06-01",
+    the_end_of_the_month: "2026-06-30",
+    total_reality_lessons: 12,
+    actual_listed_tuition_fee: 2800000,
+    coupon: null,
+    have_student_paid: false,
+    parent_name: "Phạm Hữu Long",
+    balance: 1500000 // Thiếu tiền
+  },
+  {
+    key: "5",
+    student_name: "Hoàng Anh Tú",
+    class_name: "11B",
+    course_name: "pre ielts",
+    the_first_of_the_month: "2026-07-01",
+    the_end_of_the_month: "2026-07-31",
+    total_reality_lessons: 15,
+    actual_listed_tuition_fee: 3750000,
+    coupon: { code: "EARLYBIRD", discount: 250000 },
+    have_student_paid: false,
+    parent_name: "Hoàng Minh Phúc",
+    balance: 0 // Thiếu tiền
+  }
+];
+
+export const mockSalaries = [
+  {
+    key: "1",
+    teacher_name: "Nguyễn Văn A",
+    the_first_of_the_month: "2026-06-01",
+    the_end_of_the_month: "2026-06-30",
+    total_lessons_teached: 24,
+    monthly_salary: 12000000,
+    is_teacher_paid: true
+  },
+  {
+    key: "2",
+    teacher_name: "Trần Thị B",
+    the_first_of_the_month: "2026-06-01",
+    the_end_of_the_month: "2026-06-30",
+    total_lessons_teached: 16,
+    monthly_salary: 8000000,
+    is_teacher_paid: false
+  },
+  {
+    key: "3",
+    teacher_name: "Lê Minh C",
+    the_first_of_the_month: "2026-06-01",
+    the_end_of_the_month: "2026-06-30",
+    total_lessons_teached: 30,
+    monthly_salary: 18000000,
+    is_teacher_paid: false
+  },
+  {
+    key: "4",
+    teacher_name: "Phạm Thu D",
+    the_first_of_the_month: "2026-05-01",
+    the_end_of_the_month: "2026-05-31",
+    total_lessons_teached: 20,
+    monthly_salary: 10000000,
+    is_teacher_paid: true
+  }
+];
+
+export const mockClasses = [
+  // Tiếng Anh Tiểu Học (5 lớp)
+  { id: "c1", categoryId: "primary", name: "Primary - 1A", currentStudents: 20, maxStudents: 25, schedule: "T2-T4-T6, 18:00 - 19:30", teacher: "Nguyễn Văn A", room: "P.101", status: "active" },
+  { id: "c2", categoryId: "primary", name: "Primary - 2B", currentStudents: 18, maxStudents: 25, schedule: "T3-T5-T7, 17:30 - 19:00", teacher: "Trần Thị B", room: "P.102", status: "active" },
+  { id: "c3", categoryId: "primary", name: "Primary - 3C", currentStudents: 25, maxStudents: 25, schedule: "T2-T4-T6, 19:30 - 21:00", teacher: "Lê Minh C", room: "P.103", status: "active" },
+  { id: "c4", categoryId: "primary", name: "Primary - 4D", currentStudents: 15, maxStudents: 20, schedule: "T7-CN, 08:00 - 10:00", teacher: "Nguyễn Văn A", room: "P.104", status: "upcoming" },
+  { id: "c5", categoryId: "primary", name: "Primary - 5E", currentStudents: 22, maxStudents: 25, schedule: "T3-T5, 18:00 - 20:00", teacher: "Phạm Thu D", room: "P.105", status: "active" },
+  
+  // Tiếng Anh THCS (4 lớp)
+  { id: "c6", categoryId: "secondary", name: "Secondary - 6A", currentStudents: 15, maxStudents: 20, schedule: "T2-T4, 18:00 - 20:00", teacher: "Lê Minh C", room: "P.201", status: "active" },
+  { id: "c7", categoryId: "secondary", name: "Secondary - 7B", currentStudents: 20, maxStudents: 20, schedule: "T3-T5-T7, 19:30 - 21:00", teacher: "Trần Thị B", room: "P.202", status: "active" },
+  { id: "c8", categoryId: "secondary", name: "Secondary - 8C", currentStudents: 12, maxStudents: 20, schedule: "T7-CN, 14:00 - 16:00", teacher: "Phạm Thu D", room: "P.203", status: "upcoming" },
+  { id: "c9", categoryId: "secondary", name: "Secondary - 9D", currentStudents: 18, maxStudents: 25, schedule: "T2-T4-T6, 17:30 - 19:00", teacher: "Nguyễn Văn A", room: "P.204", status: "active" },
+
+  // Tiếng Anh THPT (3 lớp)
+  { id: "c10", categoryId: "high", name: "High School - 10A", currentStudents: 24, maxStudents: 25, schedule: "T3-T5-T7, 18:00 - 19:30", teacher: "Trần Thị B", room: "P.301", status: "active" },
+  { id: "c11", categoryId: "high", name: "High School - 11B", currentStudents: 10, maxStudents: 20, schedule: "T2-T4-T6, 19:30 - 21:00", teacher: "Lê Minh C", room: "P.302", status: "upcoming" },
+  { id: "c12", categoryId: "high", name: "High School - 12C", currentStudents: 20, maxStudents: 20, schedule: "T7-CN, 09:00 - 11:30", teacher: "Nguyễn Văn A", room: "P.303", status: "active" },
+
+  // IELTS (4 lớp)
+  { id: "c13", categoryId: "ielts", name: "IELTS Foundation", currentStudents: 15, maxStudents: 15, schedule: "T2-T4-T6, 18:00 - 20:00", teacher: "Phạm Thu D", room: "P.401", status: "active" },
+  { id: "c14", categoryId: "ielts", name: "IELTS 5.0", currentStudents: 12, maxStudents: 15, schedule: "T3-T5-T7, 18:00 - 20:00", teacher: "Lê Minh C", room: "P.402", status: "active" },
+  { id: "c15", categoryId: "ielts", name: "IELTS 6.0", currentStudents: 14, maxStudents: 15, schedule: "T7-CN, 14:00 - 16:30", teacher: "Trần Thị B", room: "P.403", status: "upcoming" },
+  { id: "c16", categoryId: "ielts", name: "IELTS 7.0 Master", currentStudents: 8, maxStudents: 10, schedule: "T2-T4, 19:30 - 21:30", teacher: "Nguyễn Văn A", room: "P.404", status: "active" }
 ];

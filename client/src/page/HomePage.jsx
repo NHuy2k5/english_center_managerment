@@ -63,7 +63,7 @@ function NavigationBar() {
     <nav className="bg-white shadow-md py-4 px-6">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         <div className="flex items-center gap-8">
-          <div className="text-2xl font-bold text-blue-600">EnglishPro</div>
+          <div className="text-2xl font-bold text-blue-600">EngPro</div>
 
           <div className="flex items-center gap-6">
             <a

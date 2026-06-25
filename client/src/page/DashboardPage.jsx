@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Row,
   Col,
@@ -14,12 +14,15 @@ import {
   Dropdown,
   Popconfirm,
   message as antMessage,
-  Select
+  Select,
+  Radio
 } from "antd";
 const { Option } = Select;
+import { ComposedChart, Line, Area, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer } from "recharts";
 import {
   TeamOutlined,
   UserOutlined,
+  SafetyCertificateOutlined,
   BookOutlined,
   DollarOutlined,
   CalendarOutlined,
@@ -37,8 +40,26 @@ import {
 } from "@ant-design/icons";
 import MainLayout from "../layout/MainLayout";
 import { mockStudents } from "../mockData";
+import AddStudentDrawer from "../components/AddStudentDrawer";
+import StudentInfoModal from "../components/StudentInfoModal";
+import TuitionHistoryModal from "../components/TuitionHistoryModal";
 
 const { Title, Text } = Typography;
+
+const chartData = [
+  { name: 'Th 1', student: 30, revenue: 40, teacher: 60 },
+  { name: 'Th 2', student: 50, revenue: 30, teacher: 45 },
+  { name: 'Th 3', student: 80, revenue: 85, teacher: 25 },
+  { name: 'Th 4', student: 50, revenue: 50, teacher: 65 },
+  { name: 'Th 5', student: 10, revenue: 85, teacher: 45 },
+  { name: 'Th 6', student: 80, revenue: 40, teacher: 25 },
+  { name: 'Th 7', student: 50, revenue: 95, teacher: 75 },
+  { name: 'Th 8', student: 30, revenue: 65, teacher: 35 },
+  { name: 'Th 9', student: 95, revenue: 45, teacher: 65 },
+  { name: 'Th 10', student: 10, revenue: 45, teacher: 75 },
+  { name: 'Th 11', student: 60, revenue: 20, teacher: 15 },
+  { name: 'Th 12', student: 85, revenue: 12, teacher: 65 },
+];
 
 const recentActivities = [
   { title: "Trần Minh Khoa đăng ký lớp THCS cơ bản", time: "5 phút trước", icon: "🎓" },
@@ -48,227 +69,10 @@ const recentActivities = [
   { title: "Phụ huynh Lê Văn Thành gửi yêu cầu tư vấn", time: "3 giờ trước", icon: "💬" },
 ];
 
-const formatVND = (amount) => amount.toLocaleString("vi-VN") + " ₫";
-
-const formatDate = (dateStr) => {
-  const [y, m, d] = dateStr.split("-");
-  return `${d}/${m}/${y}`;
-};
-
-const UnpaidFeesTable = () => {
-  // Filter only students who owe tuition
-  const [dataSource, setDataSource] = React.useState(mockStudents.filter(s => s.tuitionOwed));
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-
-  const handleDelete = (key) => {
-    setDataSource((prev) => prev.filter((r) => r.key !== key));
-    antMessage.success("Đã xóa học viên khỏi danh sách");
-  };
-
-  const columns = [
-    {
-      title: "Họ và tên",
-      dataIndex: "name",
-      key: "name",
-      sorter: (a, b) => a.name.localeCompare(b.name),
-      render: (name) => (
-        <Space>
-          <Avatar
-            size={34}
-            style={{
-              background: "linear-gradient(135deg, #1677ff, #4096ff)",
-              fontWeight: 700,
-              fontSize: 13,
-              flexShrink: 0,
-            }}
-          >
-            {name.split(" ").pop()[0]}
-          </Avatar>
-          <Text strong style={{ fontSize: 13 }}>{name}</Text>
-        </Space>
-      ),
-    },
-    {
-      title: "Mã học viên",
-      dataIndex: "id",
-      key: "id",
-      render: (id) => (
-        <Text style={{ color: "#1677ff", fontWeight: 500, fontSize: 13 }}>{id}</Text>
-      ),
-    },
-    {
-      title: "Lớp",
-      dataIndex: "classCode",
-      key: "classCode",
-      align: "center",
-      render: (code) => (
-        <Tag color="geekblue" style={{ borderRadius: 6, fontWeight: 600 }}>{code}</Tag>
-      ),
-    },
-    {
-      title: "Học phí (₫)",
-      dataIndex: "fee",
-      key: "fee",
-      sorter: (a, b) => a.fee - b.fee,
-      render: (fee) => (
-        <Text strong style={{ color: "#ff4d4f", fontSize: 13 }}>
-          {formatVND(fee)}
-        </Text>
-      ),
-    },
-    {
-      title: "Hạn nộp",
-      dataIndex: "deadline",
-      key: "deadline",
-      sorter: (a, b) => new Date(a.deadline) - new Date(b.deadline),
-      render: (deadline) => {
-        const due = new Date(deadline);
-        due.setHours(0, 0, 0, 0);
-        const diffDays = Math.ceil((due - today) / (1000 * 60 * 60 * 24));
-        const isOverdue = diffDays < 0;
-
-        if (isOverdue) {
-          return (
-            <Space direction="vertical" size={2}>
-              <Tag color="error" style={{ borderRadius: 6, fontWeight: 600, margin: 0 }}>
-                Quá hạn {Math.abs(diffDays)} ngày
-              </Tag>
-              <Text strong style={{ fontSize: 12 }}>
-                {formatDate(deadline)}
-              </Text>
-            </Space>
-          );
-        }
-
-        const tagColor   = diffDays === 0 ? "warning" : diffDays <= 5 ? "warning" : "success";
-        const tagLabel   = diffDays === 0 ? "Hết hạn hôm nay" : `Còn ${diffDays} ngày`;
-
-        return (
-          <Space direction="vertical" size={2}>
-            <Tag color={tagColor} style={{ borderRadius: 6, fontWeight: 600, margin: 0 }}>
-              {tagLabel}
-            </Tag>
-            <Text strong style={{ fontSize: 12 }}>
-              {formatDate(deadline)}
-            </Text>
-          </Space>
-        );
-      },
-    },
-    {
-      title: "Thao tác",
-      key: "action",
-      align: "center",
-      render: (_, record) => {
-        const moreMenu = {
-          items: [
-            {
-              key: "edit",
-              icon: <EditOutlined />,
-              label: "Chỉnh sửa",
-              onClick: () => antMessage.info(`Chỉnh sửa: ${record.name}`),
-            },
-            { type: "divider" },
-            {
-              key: "delete",
-              icon: <DeleteOutlined />,
-              label: (
-                <Popconfirm
-                  title="Xóa học viên này?"
-                  description="Hành động này không thể hoàn tác."
-                  onConfirm={() => handleDelete(record.key)}
-                  okText="Xóa"
-                  cancelText="Hủy"
-                  okButtonProps={{ danger: true }}
-                >
-                  <Text type="danger">Xóa</Text>
-                </Popconfirm>
-              ),
-            },
-          ],
-        };
-        return (
-          <Space size={2}>
-            <Tooltip title="Liên lạc với phụ huynh/học sinh">
-              <Button type="text" icon={<PhoneOutlined />} shape="circle" style={{ color: "#52c41a" }}
-                onClick={() => antMessage.info(`Liên lạc: ${record.name}`)} />
-            </Tooltip>
-            <Tooltip title="Xem thông tin">
-              <Button type="text" icon={<InfoCircleOutlined />} shape="circle" style={{ color: "#1677ff" }}
-                onClick={() => antMessage.info(`Thông tin: ${record.name}`)} />
-            </Tooltip>
-            <Tooltip title="In phiếu thu">
-              <Button type="text" icon={<PrinterOutlined />} shape="circle" style={{ color: "#8c8c8c" }}
-                onClick={() => antMessage.info(`In phiếu: ${record.name}`)} />
-            </Tooltip>
-            <Dropdown menu={moreMenu} trigger={["click"]} placement="bottomRight">
-              <Button type="text" icon={<MoreOutlined style={{ fontSize: 18 }} />} shape="circle" style={{ color: "#8c8c8c" }} />
-            </Dropdown>
-          </Space>
-        );
-      },
-    },
-  ];
-
-  return (
-    <Card
-      bordered={false}
-      style={{ borderRadius: 14, boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}
-      title={
-        <Space>
-          <DollarOutlined style={{ color: "#ff4d4f" }} />
-          <span style={{ fontWeight: 700, fontSize: 15 }}>Học phí chưa thanh toán</span>
-          <Tag color="red" style={{ borderRadius: 6, fontWeight: 600 }}>
-            {dataSource.length} học viên
-          </Tag>
-        </Space>
-      }
-      extra={
-        <Space>
-          <Select placeholder="Trạng thái" style={{ width: 140 }} allowClear>
-            <Option value="overdue">Quá hạn</Option>
-            <Option value="near_due">Gần/chưa tới hạn</Option>
-          </Select>
-          <Button
-            icon={<BellOutlined />}
-            size="small"
-            style={{ borderRadius: 8 }}
-            onClick={() => antMessage.info("Đã gửi nhắc nhở đến tất cả học viên quá hạn")}
-          >
-            Gửi nhắc nhở
-          </Button>
-          <Button
-            icon={<EditOutlined />}
-            type="primary"
-            ghost
-            size="small"
-            style={{ borderRadius: 8 }}
-            onClick={() => antMessage.info("Chỉnh sửa danh sách")}
-          >
-            Chỉnh sửa
-          </Button>
-        </Space>
-      }
-    >
-      <Table
-        dataSource={dataSource}
-        columns={columns}
-        rowKey="key"
-        tableLayout="fixed"
-        pagination={{
-          pageSize: 5,
-          showTotal: (total, range) =>
-            `Hiển thị ${range[0]}–${range[1]} trong ${total} học viên`,
-          style: { marginBottom: 0 },
-        }}
-        style={{ fontSize: 13 }}
-      />
-    </Card>
-  );
-};
+// UnpaidFeesTable has been moved to UnpaidFeesTable_draft_reserved.jsx
 
 const DashboardPage = () => {
+  const [isAddStudentVisible, setIsAddStudentVisible] = useState(false);
   return (
     <MainLayout selectedKey="dashboard" title="Dashboard">
       {/* Welcome banner */}
@@ -327,9 +131,9 @@ const DashboardPage = () => {
             bg: "#f6ffed",
           },
           {
-            title: "Lớp học đang mở",
-            value: "45",
-            prefix: <BookOutlined style={{ color: "#faad14" }} />,
+            title: "Tỉ lệ chuyên cần",
+            value: "95%",
+            prefix: <SafetyCertificateOutlined style={{ color: "#faad14" }} />,
             accentColor: "#faad14",
             bg: "#fffbe6",
           },
@@ -368,6 +172,83 @@ const DashboardPage = () => {
             </Card>
           </Col>
         ))}
+      </Row>
+
+      {/* ── OVERVIEW CHART ─────────────────────────────────── */}
+      <Row gutter={[20, 20]} style={{ marginBottom: 24 }}>
+        <Col span={24}>
+          <Card
+            title={<span style={{ fontWeight: 700, color: "#0f1c3f", fontSize: 18 }}>Tổng quan trung tâm</span>}
+            extra={
+              <Radio.Group defaultValue="month" size="middle" buttonStyle="solid">
+                <Radio.Button value="week" style={{ borderRadius: "8px 0 0 8px" }}>Tuần</Radio.Button>
+                <Radio.Button value="month">Tháng</Radio.Button>
+                <Radio.Button value="year">Năm</Radio.Button>
+                <Radio.Button value="all" style={{ borderRadius: "0 8px 8px 0" }}>Tất cả</Radio.Button>
+              </Radio.Group>
+            }
+            bordered={false}
+            style={{ borderRadius: 14, boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}
+            bodyStyle={{ padding: "24px 24px 12px" }}
+          >
+            <div style={{ width: '100%', height: 350 }}>
+              <ResponsiveContainer>
+                <ComposedChart
+                  data={chartData}
+                  margin={{ top: 20, right: 20, bottom: 20, left: 0 }}
+                >
+                  <CartesianGrid stroke="#f0f0f0" vertical={false} />
+                  <XAxis 
+                    dataKey="name" 
+                    axisLine={false} 
+                    tickLine={false} 
+                    tick={{ fill: '#8c8c8c', fontSize: 12 }} 
+                    dy={10}
+                  />
+                  <YAxis 
+                    axisLine={false} 
+                    tickLine={false} 
+                    tick={{ fill: '#8c8c8c', fontSize: 12 }} 
+                    dx={-10}
+                  />
+                  <RechartsTooltip 
+                    cursor={{ fill: 'rgba(0,0,0,0.04)' }}
+                    contentStyle={{ borderRadius: 8, border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+                  />
+                  <Legend 
+                    iconType="circle" 
+                    wrapperStyle={{ paddingTop: 20 }}
+                  />
+                  <Area 
+                    type="monotone" 
+                    dataKey="revenue" 
+                    name="Doanh thu" 
+                    fill="#52c41a" 
+                    stroke="#52c41a" 
+                    fillOpacity={0.15} 
+                  />
+                  <Bar 
+                    dataKey="student" 
+                    name="Số lượng học viên" 
+                    barSize={12} 
+                    fill="#722ed1" 
+                    radius={[4, 4, 0, 0]} 
+                  />
+                  <Line 
+                    type="monotone" 
+                    dataKey="teacher" 
+                    name="Giáo viên hoạt động" 
+                    stroke="#ff4d4f" 
+                    strokeDasharray="5 5" 
+                    strokeWidth={2}
+                    dot={{ r: 0 }}
+                    activeDot={{ r: 6 }}
+                  />
+                </ComposedChart>
+              </ResponsiveContainer>
+            </div>
+          </Card>
+        </Col>
       </Row>
 
       {/* ── MIDDLE ROW ──────────────────────────────────────── */}
@@ -419,6 +300,13 @@ const DashboardPage = () => {
                     style={{ height: 64, borderRadius: 10, border: `1.5px solid ${action.bg}`, background: action.bg, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 4, transition: "all 0.2s" }}
                     onMouseEnter={(e) => { e.currentTarget.style.borderColor = action.color; e.currentTarget.style.transform = "translateY(-1px)"; }}
                     onMouseLeave={(e) => { e.currentTarget.style.borderColor = action.bg; e.currentTarget.style.transform = "translateY(0)"; }}
+                    onClick={() => {
+                      if (action.label === "Thêm học viên") {
+                        setIsAddStudentVisible(true);
+                      } else {
+                        antMessage.info(`Chức năng ${action.label} đang được phát triển!`);
+                      }
+                    }}
                   >
                     <span style={{ color: action.color, fontSize: 18 }}>{action.icon}</span>
                     <span style={{ color: action.color, fontSize: 11, fontWeight: 600 }}>{action.label}</span>
@@ -430,12 +318,8 @@ const DashboardPage = () => {
         </Col>
       </Row>
 
-      {/* ── UNPAID FEES TABLE ──────────────────────────────── */}
-      <Row gutter={[20, 20]} style={{ marginTop: 24 }}>
-        <Col span={24}>
-          <UnpaidFeesTable />
-        </Col>
-      </Row>
+      {/* UNPAID FEES TABLE SECTION REMOVED */}
+      <AddStudentDrawer open={isAddStudentVisible} onClose={() => setIsAddStudentVisible(false)} />
     </MainLayout>
   );
 };

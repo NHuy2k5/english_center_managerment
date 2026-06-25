@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Row,
   Col,
@@ -29,15 +29,31 @@ import {
   PhoneOutlined,
   MailOutlined,
   InfoCircleOutlined,
-  InboxOutlined
+  InboxOutlined,
+  BookOutlined,
+  DollarOutlined,
+  UserAddOutlined
 } from "@ant-design/icons";
 import MainLayout from "../layout/MainLayout";
 import { mockStudents } from "../mockData";
+import AddStudentDrawer from "../components/AddStudentDrawer";
+import AddParentDrawer from "../components/AddParentDrawer";
+import StudentInfoModal from "../components/StudentInfoModal";
+import TuitionHistoryModal from "../components/TuitionHistoryModal";
 
 const { Title, Text } = Typography;
 const { Option } = Select;
 
 const StudentPage = () => {
+  const [isAddDrawerVisible, setIsAddDrawerVisible] = useState(false);
+  const [isAddParentVisible, setIsAddParentVisible] = useState(false);
+  const [infoModalVisible, setInfoModalVisible] = useState(false);
+  const [selectedStudent, setSelectedStudent] = useState(null);
+  const [tuitionModalVisible, setTuitionModalVisible] = useState(false);
+  const [selectedTuitionStudent, setSelectedTuitionStudent] = useState(null);
+
+  const [selectedEditStudent, setSelectedEditStudent] = useState(null);
+
   const columns = [
     {
       title: "Học viên",
@@ -96,85 +112,34 @@ const StudentPage = () => {
       ),
     },
     {
-      title: "Lớp",
-      key: "classes",
-      dataIndex: "classCode",
-      align: "center",
-      render: (classCode) => (
-        <Tag color="geekblue" style={{ borderRadius: 6, fontWeight: 600 }}>
-          {classCode}
-        </Tag>
-      ),
-    },
-    {
-      title: "Trạng thái",
-      key: "status",
-      dataIndex: "status",
-      render: (status) => (
-        <Tag
-          color={status === "active" ? "success" : "warning"}
-          style={{
-            borderRadius: 6,
-            fontWeight: 600,
-          }}
-        >
-          {status === "active" ? "Đang học" : "Bảo lưu"}
-        </Tag>
-      ),
-    },
-    {
       title: "Thao tác",
       key: "action",
       align: "center",
       render: (_, record) => {
-        const moreMenu = {
-          items: [
-            {
-              key: "edit",
-              icon: <EditOutlined />,
-              label: "Chỉnh sửa",
-              onClick: () => antMessage.info(`Chỉnh sửa: ${record.name}`),
-            },
-            { type: "divider" },
-            {
-              key: "delete",
-              icon: <DeleteOutlined />,
-              label: (
-                <Popconfirm
-                  title="Xóa học viên này?"
-                  description="Hành động này không thể hoàn tác."
-                  onConfirm={() => antMessage.success("Đã xóa học viên")}
-                  okText="Xóa"
-                  cancelText="Hủy"
-                  okButtonProps={{ danger: true }}
-                >
-                  <Text type="danger">Xóa</Text>
-                </Popconfirm>
-              ),
-            },
-          ],
-        };
         return (
           <Space size={2}>
-            <Tooltip title="Liên lạc với phụ huynh/học sinh">
-              <Button type="text" icon={<PhoneOutlined />} shape="circle" style={{ color: "#52c41a" }}
-                onClick={() => antMessage.info(`Liên lạc: ${record.name}`)} />
-            </Tooltip>
             <Tooltip title="Xem thông tin">
               <Button type="text" icon={<InfoCircleOutlined />} shape="circle" style={{ color: "#1677ff" }}
-                onClick={() => antMessage.info(`Thông tin chi tiết: ${record.name}`)} />
+                onClick={() => { setSelectedStudent(record); setInfoModalVisible(true); }} />
             </Tooltip>
-            <Tooltip title="Chỉnh sửa">
+            <Tooltip title="Lịch sử học phí">
+              <Button type="text" icon={<DollarOutlined />} shape="circle" style={{ color: "#eb2f96" }}
+                onClick={() => {
+                  setSelectedTuitionStudent(record);
+                  setTuitionModalVisible(true);
+                }} />
+            </Tooltip>
+            <Tooltip title="Chỉnh sửa (Bao gồm quản lý lớp)">
               <Button type="text" icon={<EditOutlined />} shape="circle" style={{ color: "#faad14" }}
-                onClick={() => antMessage.info(`Chỉnh sửa: ${record.name}`)} />
+                onClick={() => {
+                  setSelectedEditStudent(record);
+                  setIsAddDrawerVisible(true);
+                }} />
             </Tooltip>
             <Tooltip title="Lưu trữ">
               <Button type="text" icon={<InboxOutlined />} shape="circle" style={{ color: "#722ed1" }}
                 onClick={() => antMessage.info(`Lưu trữ: ${record.name}`)} />
             </Tooltip>
-            <Dropdown menu={moreMenu} trigger={["click"]} placement="bottomRight">
-              <Button type="text" icon={<MoreOutlined style={{ fontSize: 18 }} />} shape="circle" style={{ color: "#8c8c8c" }} />
-            </Dropdown>
           </Space>
         );
       },
@@ -230,35 +195,28 @@ const StudentPage = () => {
               style={{ width: 280, borderRadius: 8 }}
               allowClear
             />
-            <Select placeholder="Phân loại lớp" style={{ width: 140 }} allowClear>
-              <Option value="primary">Tiểu học</Option>
-              <Option value="secondary">THCS</Option>
-              <Option value="highschool">THPT</Option>
-              <Option value="ielts">IELTS</Option>
-            </Select>
-            <Select placeholder="Trạng thái" style={{ width: 140 }} allowClear>
-              <Option value="active">Đang học</Option>
-              <Option value="reserved">Bảo lưu</Option>
-            </Select>
           </Space>
           <Space>
-            <Button
-              icon={<EditOutlined />}
-              type="primary"
-              ghost
-              size="small"
-              style={{ borderRadius: 8, padding: "0 16px", height: 32 }}
-              onClick={() => antMessage.info("Chỉnh sửa danh sách")}
-            >
-              Chỉnh sửa
-            </Button>
             <Button 
               type="primary" 
               icon={<PlusOutlined />} 
               size="small"
-              style={{ borderRadius: 8, padding: "0 16px", height: 32 }}
+              style={{ borderRadius: 8, padding: "0 16px", height: 32, background: "#1677ff" }}
+              onClick={() => {
+                setSelectedEditStudent(null);
+                setIsAddDrawerVisible(true);
+              }}
             >
               Thêm Học viên
+            </Button>
+            <Button 
+              type="primary" 
+              icon={<UserAddOutlined />} 
+              size="small"
+              style={{ borderRadius: 8, padding: "0 16px", height: 32, background: "#52c41a", borderColor: "#52c41a" }}
+              onClick={() => setIsAddParentVisible(true)}
+            >
+              Thêm Phụ huynh
             </Button>
           </Space>
         </div>
@@ -270,7 +228,17 @@ const StudentPage = () => {
           rowKey="key"
           style={{ fontSize: 13 }}
         />
+        <div style={{ textAlign: "center", marginTop: 16 }}>
+          <Button type="link" style={{ fontSize: 13 }} onClick={() => antMessage.info("Đang mở danh sách toàn bộ học sinh (bao gồm lưu trữ, thôi học)...")}>
+            Xem toàn bộ danh sách học sinh (bao gồm lưu trữ, thôi học)
+          </Button>
+        </div>
       </Card>
+      <AddStudentDrawer open={isAddDrawerVisible} onClose={() => setIsAddDrawerVisible(false)} />
+      <AddParentDrawer open={isAddParentVisible} onClose={() => setIsAddParentVisible(false)} />
+      <StudentInfoModal open={infoModalVisible} onClose={() => setInfoModalVisible(false)} student={selectedStudent} />
+      <TuitionHistoryModal open={tuitionModalVisible} onClose={() => setTuitionModalVisible(false)} student={selectedTuitionStudent} />
+      <AddStudentDrawer open={isAddDrawerVisible} onClose={() => setIsAddDrawerVisible(false)} editRecord={selectedEditStudent} />
     </MainLayout>
   );
 };

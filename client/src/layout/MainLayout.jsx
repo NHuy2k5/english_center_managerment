@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Layout, Menu, Input, Badge, Avatar, Dropdown, Button, Typography, Tooltip } from "antd";
+import { Layout, Menu, Input, Badge, Avatar, Dropdown, Button, Typography, Tooltip, message as antMessage } from "antd";
 import {
   DashboardOutlined,
   TeamOutlined,
@@ -14,6 +14,8 @@ import {
   LogoutOutlined,
   IdcardOutlined,
   StarOutlined,
+  DollarOutlined,
+  BankOutlined,
 } from "@ant-design/icons";
 
 const { Sider, Header, Content } = Layout;
@@ -22,10 +24,10 @@ const { Text } = Typography;
 const menuItems = [
   { key: "dashboard", icon: <DashboardOutlined />, label: "Dashboard" },
   { key: "student", icon: <TeamOutlined />, label: "Student" },
+  { key: "payment", icon: <DollarOutlined />, label: "Payment" },
   { key: "teacher", icon: <UserOutlined />, label: "Teacher" },
-  { key: "class", icon: <BookOutlined />, label: "Class" },
-  { key: "account", icon: <IdcardOutlined />, label: "Account Info" },
-  { key: "settings", icon: <SettingOutlined />, label: "Settings" },
+  { key: "payroll", icon: <BankOutlined />, label: "Payroll" },
+  { key: "class", icon: <BookOutlined />, label: "Class" }
 ];
 
 const accountItems = [
@@ -88,7 +90,7 @@ const MainLayout = ({ children, selectedKey, title = "Dashboard" }) => {
           {!collapsed && (
             <div>
               <div style={{ color: "#fff", fontWeight: 700, fontSize: 16, lineHeight: 1.2 }}>
-                EnglishPro
+                EngPro
               </div>
               <div style={{ color: "rgba(255,255,255,0.45)", fontSize: 11 }}>
                 Admin Panel
@@ -102,8 +104,13 @@ const MainLayout = ({ children, selectedKey, title = "Dashboard" }) => {
           mode="inline"
           selectedKeys={[selectedKey]}
           onClick={({ key }) => {
-            if (key === "dashboard") navigate("/dashboard");
-            if (key === "student") navigate("/student");
+            // Because the keys match the route paths (except for some future ones maybe),
+            // we can just navigate to /key. For specific ones, we can leave them.
+            if (["dashboard", "student", "payment", "teacher", "payroll", "class"].includes(key)) {
+              navigate(`/${key}`);
+            } else {
+              antMessage.info(`Tính năng ${key} đang được phát triển!`);
+            }
           }}
           items={menuItems}
           style={{ background: "transparent", border: "none", padding: "4px 8px" }}
