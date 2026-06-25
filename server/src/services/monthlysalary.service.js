@@ -71,7 +71,7 @@ const generateMonthlyTeacherSalary = async ({
                         [Op.ne]: 'canceled'
                     },
 
-                    start_date: {
+                    start: {
                         [Op.between]: [
                             startDate,
                             endDate

@@ -28,7 +28,7 @@ const getClassController = async (req, res) => {
             return res.status(status).json(result);
         }
         // guest, parent, student không được xem lớp học đã đóng
-        if (!isPrivileged && course.status !== 'closed') {
+        if (!isPrivileged && result.data.status === 'closed') {
             return res.status(403).json({ message: 'Forbidden' });
         }
         return res.status(status).json(result);
@@ -59,7 +59,7 @@ const updateClassController = async (req, res) => {
         if('course_id' in data){
             data.course_id = courseID
         }
-        const {status, ...result} = await updateClass(data, number(classID));
+        const {status, ...result} = await updateClass(data, Number(classID));
         if('data' in result) {
             return res.status(status).json(result);
         }
@@ -113,11 +113,10 @@ const removeFromClass = async (req, res) => {
         */
         const classID = Number(req.params.classID);
         const {status, ...result} = await removeStudentOrTeacherToClass(classID, req.body.user_id);
-        addStudentOrTeacherToClass(classID, req.body.user_id);
         const businessErrors = [
             'Student is not in class or left from this class',
             'Teacher is not in this class',
-        ];;
+        ];
         if (status === 404) {
             return res.status(status).json(result);
         }

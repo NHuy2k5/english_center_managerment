@@ -15,8 +15,8 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: 'coupon_id'
       });
       Coupon.belongsToMany(models.Parent, {
-        through: 'parent-coupon',
-        foreignKey: 'parent_id'
+        through: 'parent_coupon',
+        foreignKey: 'coupon_id'
       });
     }
   }

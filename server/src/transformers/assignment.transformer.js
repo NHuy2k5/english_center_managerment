@@ -6,8 +6,10 @@ exports.transformAssignment = (assignment) => {
         id: assignmentData.id,
         status: assignmentData.status
     };
-    result.teacher.id = Teacher.id;
-    result.teacher.full_name = Teacher.full_name
+    result.teacher = {
+        id: Teacher.id,
+        full_name: Teacher.teacher_user.full_name
+    };
     result.lesson = {
         ...lessonData,
         class_name: Class.name,

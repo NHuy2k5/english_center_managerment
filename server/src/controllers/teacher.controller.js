@@ -77,7 +77,7 @@ const deleteTeacherController = async (req, res) => {
         const data = req.body;
         const id = Number(req.params.teacherID);
         const result = await deleteTeacher(id);
-        return res.status(status).json(result);
+        return res.status(result.status).json(result);
     } catch (error) {
         return res.status(500).json({ message: error.message });
     }

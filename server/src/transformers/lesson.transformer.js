@@ -5,7 +5,7 @@ exports.transformLesson = (lesson) => {
         ...lessonData
     };
     if (Class) {
-        result.class_name = Class.class_name
+        result.class_name = Class.name
     }
     return result;
 };

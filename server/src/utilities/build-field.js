@@ -1,3 +1,4 @@
+const { sequelize } = require('../models/index');
 const buildComputedAttributes = (virtualAttributes = []) => {
     const attrs = [];
 

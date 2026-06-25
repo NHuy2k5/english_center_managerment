@@ -2,7 +2,7 @@ const { getMonthlyTeacherSalaries, payTeacherSalary} = require("../services/mont
 const { getTeachers } = require("../services/teacher.service");
 const { Op } = require('sequelize');
 const { MonthlyTeacherSalary } = require('../models/index');
-
+const dayjs = require('dayjs');
 /*
     Query: ?teacher_id=1&the_first_of_the_month=2026-06-01&is_teacher_paid=false
            &_sort=the_first_of_the_month&_order=desc&_page=1&_limit=10

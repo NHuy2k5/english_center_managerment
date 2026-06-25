@@ -1,5 +1,5 @@
 // middlewares/tuitionfee.middleware.js
-
+const { Op } = require('sequelize');
 const { Student } = require('../models/index');
 
 const filterTuitionFeeByRole = async (req, res, next) => {

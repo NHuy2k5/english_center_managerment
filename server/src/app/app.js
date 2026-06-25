@@ -25,4 +25,13 @@ try {
 } catch (error) {
     console.log(error);
 }
+
+process.on('uncaughtException', (err) => {
+    console.error('uncaughtException:', err);
+});
+
+process.on('unhandledRejection', (err) => {
+    console.error('unhandledRejection:', err);
+});
+
 module.exports = app;

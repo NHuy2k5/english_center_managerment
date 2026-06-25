@@ -1,4 +1,4 @@
-
+const { sequelize } = require('../models/index');
 const buildOrder = (orders = {}) => {
 
     const SORT_LITERAL_MAP = {

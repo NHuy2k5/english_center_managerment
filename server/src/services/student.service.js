@@ -133,6 +133,7 @@ module.exports = {
     createStudent: async (data) => {
         const t = await sequelize.transaction();
         try {
+            console.log('1. Finding role...');
             const role = await Role.findOne({
                 where: {
                     name: 'student',
@@ -146,7 +147,9 @@ module.exports = {
                     message: "Role student not found"
                 }
             }
+            console.log('2. Role found:', role?.id);
             // Thêm thông tin user
+            console.log('3. Creating user...');
             const user = await User.create({
                 user_name: data.user_name,
                 phone: data.phone,
@@ -161,6 +164,7 @@ module.exports = {
                 created_at: new Date(),
                 updated_at: new Date()
             }, { transaction: t });
+            console.log('4. User created:', user?.id);
             // Thêm role student
             await UserRole.create({
                 user_id: user.id,
@@ -180,11 +184,12 @@ module.exports = {
 
             return {
                 status: 201,
-                data: transformStudent(result),
+                // data: transformStudent(result),
                 message: "Create success"
             };
         } catch (error) {
             await t.rollback();
+            console.error('FULL ERROR:', error);
             return {
                 status: 400,
                 message: error.message
@@ -213,14 +218,16 @@ module.exports = {
                 await User.update(userData,
                     {
                         where: { id },
-                        transaction: t
+                        transaction: t,
+                        validate: false
                     });
             };
             if ("parent_id" in data) {
                 await Student.update({ parent_id },
                     {
                         where: { id },
-                        transaction: t
+                        transaction: t,
+                        validate: false
                     });
             };
             await t.commit();
@@ -249,7 +256,7 @@ module.exports = {
                     message: "Student not found"
                 };
             };
-            const studentRole = await Role.findOne({ where: { name: "student" } });
+            const studentRole = await Role.findOne({ where: { name: "student" }, transaction: t });
 
             await UserRole.destroy({
                 where: {

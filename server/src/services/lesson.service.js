@@ -146,7 +146,7 @@ module.exports = {
                 lessonData.description = data.description;
             }
             if ('class_id' in data) {
-                lessonData.classs_id = data.classs_id;
+                lessonData.class_id = data.class_id;
             }
             if ('status' in data) {
                 lessonData.status = data.status;

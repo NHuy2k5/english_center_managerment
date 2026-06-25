@@ -250,8 +250,9 @@ module.exports = {
             },{
                 where: {
                     parent_id: id
-                }
-            }, {transaction: t})
+                },
+                transaction: t
+            })
             // Xóa role parent
             const parentRole = await Role.findOne({
                 where: {

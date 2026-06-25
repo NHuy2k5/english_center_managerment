@@ -14,7 +14,7 @@ module.exports = {
         type: Sequelize.INTEGER,
         references: {
           model: 'users',
-          id: 'id'
+          key: 'id'
         },
       },
       refresh_token: {

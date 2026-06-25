@@ -12,7 +12,7 @@ module.exports = {
             where: { name: 'parent' }
         });
 
-        const password = hashPassword('123456');
+        const password = await hashPassword('123456');
 
         const parentsData = [
             {

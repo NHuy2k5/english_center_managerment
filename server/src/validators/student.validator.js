@@ -91,7 +91,7 @@ const updateStudentSchema = object({
         }),
         full_name: string(),
         address: string(),
-        birthday: string().required().matches(/^\d{4}-\d{2}-\d{2}$/, 'Birthday Date must be in YYYY-MM-DD format'),
+        birthday: string().matches(/^\d{4}-\d{2}-\d{2}$/, 'Birthday Date must be in YYYY-MM-DD format'),
         sex: string().oneOf(['male', 'female', 'undefined'], 'Sex must be male, female, or undifined.'),
         // password: string().min(6, "The password must be 6 characters or more."),
         parent_id: number().nullable(),

@@ -54,7 +54,7 @@ module.exports = {
     });
   },
   async down(queryInterface, Sequelize) {
-    await queryInterface.removeConstraint('classes', 'chk_class_status', {transaction: t});
+    await queryInterface.removeConstraint('classes', 'chk_class_status');
     await queryInterface.dropTable('classes');
   }
 };

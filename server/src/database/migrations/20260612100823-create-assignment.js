@@ -28,7 +28,7 @@ module.exports = {
       status: {
         allowNull: false,
         type: Sequelize.STRING(30),
-        defaultValue: 'main_teach'
+        defaultValue: 'teaching'
       },
       pay_per_lesson: {
         allowNull: false,

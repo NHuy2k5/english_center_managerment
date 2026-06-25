@@ -2,6 +2,7 @@ const { getCategoryCourse, getCategoryCourses, createCategoryCourse, updateCateg
 
 const getCategoryCoursesController = async (req, res) => {
     try {
+        const query = req.queryOptions;
         const {status, ...result} = await getCategoryCourses(query);
         if('data' in result) {
             return res.status(status).json(result);
@@ -57,7 +58,7 @@ const deleteCategoryCourseController = async (req, res) => {
         const data = req.body;
         const id = Number(req.params.categoryCourseID);
         const result = await deleteCategoryCourse(id);
-        return res.status(status).json(result);
+        return res.status(result.status).json(result);
     } catch (error) {
         return res.status(500).json({ message: error.message });
     }

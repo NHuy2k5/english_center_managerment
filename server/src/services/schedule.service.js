@@ -128,10 +128,12 @@ module.exports = {
                         }
                     }
                 });
-                return {
+                if (!rows || rows.length === 0) {
+                    return {
                         status: 404,
                         message: "Schedules not found"
                     }
+                }
             }
             else if (userRole.Role.name === 'student') {
                 // Check userID có role là tồn tại trong table students không
@@ -162,7 +164,7 @@ module.exports = {
                         message: "Schedules not found"
                     }
                 }
-                rows = rows.map(transformSheduleStudent);
+                rows = rows.map(transformScheduleStudent);
             }
             else if (userRole.Role.name === 'parent') {
                 const students = await Student.findAll({
@@ -196,7 +198,7 @@ module.exports = {
                         message: "Schedules not found"
                     }
                 }
-                rows = rows.map(transformSheduleStudent);
+                rows = rows.map(transformScheduleStudent);
             }
             return {
                 status: 200,
