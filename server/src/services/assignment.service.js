@@ -39,7 +39,7 @@ const query = (assignmentQuery = {}) => {
                 },
                 include: [{
                     model: Class,
-                    require: true,
+                    required: true,
                     attributes: ["name"]
                 }]
             }
@@ -49,8 +49,8 @@ const query = (assignmentQuery = {}) => {
 const createAssignment = async (data) => {
     const t = await sequelize.transaction();
     try {
-        message = [];
-        const lesson = Lesson.findOne({
+        let message = [];
+        const lesson = await Lesson.findOne({
             where: {
                 id: data.lesson_id
             },
@@ -59,7 +59,7 @@ const createAssignment = async (data) => {
         if (!lesson) {
             message.push('Lesson id is not valid')
         }
-        const teacher = Teacher.findOne({
+        const teacher = await Teacher.findOne({
             where: {
                 id: data.teacher_id
             },

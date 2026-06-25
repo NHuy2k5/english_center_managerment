@@ -58,7 +58,7 @@ const deleteStudentController = async (req, res) => {
         const data = req.body;
         const id = Number(req.params.studentID);
         const result = await deleteStudent(id);
-        return res.status(status).json(result);
+        return res.status(result.status).json(result);
     } catch (error) {
         return res.status(500).json({ message: error.message });
     }

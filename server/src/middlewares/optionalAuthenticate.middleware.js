@@ -12,7 +12,7 @@ const optionalAuthenticate = async (req, res, next) => {
         }
 
         const token = authHeader.split(' ')[1];
-        const payload = jwt.verify(token, process.env.JWT_SECRET);
+        const payload = jwt.verify(token, process.env.ACCESS_SECRET);
         const user = await User.findByPk(payload.id);
 
         req.user = user || null;

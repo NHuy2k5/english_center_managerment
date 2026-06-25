@@ -16,7 +16,7 @@ module.exports = {
       year_course: {
         allowNull: false,
         type: Sequelize.INTEGER,
-        defaultValue: new Date().getFullYear()
+        defaultValue: Sequelize.literal('YEAR(CURRENT_DATE)')
       },
       description: {
         allowNull: true,

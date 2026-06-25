@@ -1,6 +1,7 @@
 const jwt = require("jsonwebtoken");
 const { User, UserRole, Role } = require("../models/index");
-
+const dotenv = require('dotenv');
+dotenv.config()
 const authenticate = async (req, res, next) => {
     try {
         const authHeader = req.headers.authorization;
@@ -15,7 +16,7 @@ const authenticate = async (req, res, next) => {
 
         const payload = jwt.verify(
             token,
-            process.env.JWT_SECRET
+            process.env.ACCESS_SECRET
         );
 
         const user = await User.findByPk(payload.id);
@@ -35,7 +36,7 @@ const authenticate = async (req, res, next) => {
         const userData = user.toJSON();
         req.user = {
             ...userData,
-            role: userRole?.name || null
+            role: userRole?.Role?.name || null
         };
 
         next();

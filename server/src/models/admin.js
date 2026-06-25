@@ -29,14 +29,14 @@ module.exports = (sequelize, DataTypes) => {
             allowNull: true,
             type: DataTypes.TEXT,
             get() {
-                const value = this.getDataValue('description');
+                const value = this.getDataValue('config');
                 return value
                     ? JSON.parse(value)
                     : null;
             },
             set(value) {
                 this.setDataValue(
-                    'description',
+                    'config',
                     JSON.stringify(value)
                 );
             }

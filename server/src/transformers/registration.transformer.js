@@ -12,7 +12,7 @@ exports.transformRegistration = (registration) => {
 
         result.category_course = data.CategoryCourse
             ? {
-                id: data.Parent.id,
+                id: data.CategoryCourse.id,
                 name: data.CategoryCourse.name
             }
             : null;

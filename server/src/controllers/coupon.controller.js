@@ -58,7 +58,7 @@ const deleteCouponController = async (req, res) => {
         const data = req.body;
         const id = Number(req.params.couponID);
         const result = await deleteCoupon(id);
-        return res.status(status).json(result);
+        return res.status(result.status).json(result);
     } catch (error) {
         return res.status(500).json({ message: error.message });
     }

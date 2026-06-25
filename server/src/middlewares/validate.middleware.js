@@ -12,6 +12,7 @@ const validate = (schema) => {
                     ...req.params
                 }
         });
+        next();
         } catch (error) {
             return res.status(400).json({
                 success: false,
