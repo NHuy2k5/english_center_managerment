@@ -29,11 +29,6 @@ module.exports = {
         allowNull: true,
         type: Sequelize.STRING
       },
-      number_of_users: {
-        allowNull: false,
-        type: Sequelize.INTEGER,
-        defaultValue: 0
-      },
       created_at: {
         allowNull: false,
         type: Sequelize.DATE
@@ -41,7 +36,11 @@ module.exports = {
       updated_at: {
         allowNull: false,
         type: Sequelize.DATE
-      }
+      },
+      deleted_at: {
+        allowNull: true,
+        type: Sequelize.DATE
+      },
     });
   },
   async down(queryInterface, Sequelize) {

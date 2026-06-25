@@ -11,12 +11,10 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
-      Class.belongsToMany(models.Student, {
-        through: 'StudentClass',
+      Class.hasMany(models.StudentClass, {
         foreignKey: 'class_id'
       });
-      Class.belongsToMany(models.Teacher, {
-        through: 'TeacherClass',
+      Class.hasMany(models.TeacherClass, {
         foreignKey: 'class_id'
       });
       Class.belongsTo(models.Course, {
@@ -62,7 +60,9 @@ module.exports = (sequelize, DataTypes) => {
     tableName: 'classes',
     timestamps: true,
     createdAt: 'created_at',
-    updatedAt: 'updated_at'
+    updatedAt: 'updated_at',
+    deletedAt: 'deleted_at',
+    paranoid: true
   });
   return Class;
 };

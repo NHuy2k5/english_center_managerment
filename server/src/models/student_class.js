@@ -11,6 +11,12 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
+      StudentClass.belongsTo(models.Student, {
+        foreignKey: 'student_id'
+      });
+      StudentClass.belongsTo(models.Class, {
+        foreignKey: 'class_id'
+      })
     }
   }
   StudentClass.init({
@@ -39,6 +45,7 @@ module.exports = (sequelize, DataTypes) => {
     timestamps: true,
     createdAt: 'created_at',
     updatedAt: 'updated_at',
+    deletedAt: 'deleted_at',
     paranoid: true
   });
   return StudentClass;

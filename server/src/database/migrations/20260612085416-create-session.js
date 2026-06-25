@@ -6,13 +6,16 @@ module.exports = {
       id: {
         allowNull: false,
         primaryKey: true,
+        autoIncrement: true,
+        type: Sequelize.INTEGER,
+      },
+      user_id: {
+        allowNull: false,
         type: Sequelize.INTEGER,
         references: {
           model: 'users',
           id: 'id'
         },
-        onDelete: 'CASCADE',
-        onUpdate: 'CASCADE'
       },
       refresh_token: {
         allowNull: false,

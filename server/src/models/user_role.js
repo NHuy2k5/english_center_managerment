@@ -11,6 +11,12 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
+      UserRole.belongsTo(models.User, {
+        foreignKey: 'user_id'
+      });
+      UserRole.belongsTo(models.Role, {
+        foreignKey: 'role_id'
+      });
     }
   }
   UserRole.init({
@@ -30,7 +36,9 @@ module.exports = (sequelize, DataTypes) => {
     tableName: 'user_role',
     timestamps: true,
     createdAt: 'created_at',
-    updatedAt: 'updated_at'
+    updatedAt: 'updated_at',
+    deletedAt: 'deleted_at',
+    paranoid: true
   });
   return UserRole;
 };

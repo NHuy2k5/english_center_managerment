@@ -2,24 +2,21 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('parent_coupon', {
-      parent_id: {
+    await queryInterface.createTable('admins', {
+      id: {
         allowNull: false,
         primaryKey: true,
         type: Sequelize.INTEGER,
         references: {
-          model: 'parents',
-          key: 'id'
-        }
+          model: 'users',
+          id: 'id'
+        },
+        onDelete: 'CASCADE',
+        onUpdate: 'CASCADE'
       },
-      coupon_id: {
-        allowNull: false,
-        primaryKey: true,
-        type: Sequelize.INTEGER,
-        references: {
-          model: 'coupons',
-          key: 'id'
-        }
+      config: {
+        allowNull: true,
+        type: Sequelize.TEXT
       },
       created_at: {
         allowNull: false,
@@ -28,10 +25,14 @@ module.exports = {
       updated_at: {
         allowNull: false,
         type: Sequelize.DATE
-      }
+      },
+      deleted_at: {
+        allowNull: true,
+        type: Sequelize.DATE
+      },
     });
   },
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('parent_coupon');
+    await queryInterface.dropTable('admins');
   }
 };

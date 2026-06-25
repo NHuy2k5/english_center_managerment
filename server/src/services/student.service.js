@@ -7,35 +7,103 @@ const { Student,
     StudentLesson,
     TuitionFee,
     sequelize } = require("../models/index");
+const { where, Op } = require("sequelize");
 const { hashPassword } = require("../utilities/hashing")
-const studentInclude = [{
-    model: Student,
-    required: true,
-    include: [{
-        model: Parent
-    }]
-}];
+const { transformStudent } = require('../transformers/student.transformer');
+const query = (studentQuery = {}) => {
+    const hasWhere = where => where && Object.keys(where).length > 0;
+    return {
+        paranoid: false,
+        distinct: true,
+        ...(studentQuery.limit != null && { limit: studentQuery.limit }),
+        ...(studentQuery.offset != null && { offset: studentQuery.offset }),
+        ...(studentQuery.student?.attributes?.length && { attributes: studentQuery.student.attributes }),
+        order: [
+            ...(studentQuery.student?.order || []),
+            ...((studentQuery.user?.order || []).map(order => [
+                { model: User, as: 'student_user' },
+                ...order
+            ]))
+        ],
+        ...(hasWhere(studentQuery.student?.where) && {
+            where: studentQuery.student.where
+        }),
+        include: [
+            {
+                model: User,
+                as: 'student_user',
+                required: true,
+                ...(studentQuery.user?.attributes?.length ? { attributes: studentQuery.user.attributes } : { attributes: { exclude: ['password'] } }),
+                ...(hasWhere(studentQuery.user?.where) && {
+                    where: studentQuery.user.where
+                })
+            },
+            {
+                model: Parent,
+                required: false,
+                attributes: ['id', 'balance'],
+                include: [{
+                    model: User,
+                    as: 'parent_user',
+                    attributes: ["full_name", "avatar_id", "avatar_link"]
+                }]
+            }
+        ]
+    };
+}
 module.exports = {
     // Lấy tài khoản học sinh
-    getStudents: async ({ attributes, sort, order, where, limit, offset }) => {
-        const query = {
-            order: [[sort, order]],
-            where,
-            limit,
-            offset,
-            include: studentInclude
-        };
-        if (attributes) {
-            query.attributes = attributes.filter(
-                attribute => attribute !== "password"
-            );
+    /*
+        Nếu lấy parent_id
+        [{
+            id: ...,
+            user_name: ...,
+            ...
+            parent: {
+                id: ...,
+                full_name: ...,
+                avatar_link: ...,
+                avatar_id: ...
+            }
+
+        ]}
+        Nếu không lấy parent_id
+        [{
+            id: ...,
+            user_name: ...,
+            ...
+        ]}
+        Students ban đầu return từ findAll
+        [{
+            id: ...,
+            student_user: {
+                id: ...,
+                full_name: ...
+                ...
+            },
+            Parent: {
+                id: ...,
+                parent_user: {
+                    full_name: ...,
+                    avatar_link: ...,
+                    avatar_id: ...
+                }
+            }
+        }]
+    */
+    getStudents: async (studentQuery = {}) => {
+        let rows;
+        let count;
+        if (studentQuery.limit != null) {
+            const result = await Student.findAndCountAll(query(studentQuery));
+            rows = result.rows.map(transformStudent);
+            count = result.count;
         } else {
-            query.attributes = {
-                exclude: ["password"]
-            };
+            rows = await Student.findAll(query(studentQuery));
+            count = rows.length;
+            rows = rows.map(transformStudent);
         }
-        const students = await User.findAndCountAll(query);
-        if (students.count === 0) {
+        if (count === 0) {
             return {
                 status: 404,
                 message: "Students not found"
@@ -43,18 +111,13 @@ module.exports = {
         }
         return {
             status: 200,
-            data: students.rows,
-            count: students.count,
+            data: rows,
+            count,
             message: "Students found"
         };
     },
     getStudent: async (id) => {
-        const student = await User.findByPk(id, {
-            attributes: {
-                exclude: ["password"]
-            },
-            include: studentInclude
-        })
+        const student = await Student.findByPk(id, query())
         if (!student) {
             return {
                 status: 404,
@@ -63,7 +126,7 @@ module.exports = {
         }
         return {
             status: 200,
-            data: student,
+            data: transformStudent(student),
             message: "Student found"
         }
     },
@@ -113,16 +176,11 @@ module.exports = {
                 updated_at: new Date()
             }, { transaction: t });
             await t.commit();
-            const result = await User.findByPk(user.id, {
-                attributes: {
-                    exclude: ["password"]
-                },
-                include: studentInclude
-            });
+            const result = await Student.findByPk(user.id, query());
 
             return {
                 status: 201,
-                data: result,
+                data: transformStudent(result),
                 message: "Create success"
             };
         } catch (error) {
@@ -151,11 +209,13 @@ module.exports = {
                     message: "Student not found"
                 };
             };
-            await User.update(userData,
-                {
-                    where: { id },
-                    transaction: t
-                });
+            if (Object.keys(userData).length) {
+                await User.update(userData,
+                    {
+                        where: { id },
+                        transaction: t
+                    });
+            };
             if ("parent_id" in data) {
                 await Student.update({ parent_id },
                     {
@@ -164,15 +224,10 @@ module.exports = {
                     });
             };
             await t.commit();
-            const result = await User.findByPk(id, {
-                attributes: {
-                    exclude: ["password"]
-                },
-                include: studentInclude
-            });
+            const result = await Student.findByPk(id, query());
             return {
                 status: 200,
-                data: result,
+                data: transformStudent(result),
                 message: "Update success"
             };
         } catch (error) {
@@ -194,6 +249,22 @@ module.exports = {
                     message: "Student not found"
                 };
             };
+            const studentRole = await Role.findOne({ where: { name: "student" } });
+
+            await UserRole.destroy({
+                where: {
+                    user_id: id,
+                    role_id: studentRole.id
+                },
+                transaction: t
+            });
+            if (!studentRole){
+                await t.rollback();
+                return {
+                    status: 404,
+                    message: "Role student not found"
+                };
+            }
             await TuitionFee.destroy({
                 where: {
                     student_id: id
@@ -214,10 +285,11 @@ module.exports = {
                 },
                 transaction: t
             });
-            // Xóa role student
+
             await UserRole.destroy({
                 where: {
-                    user_id: id
+                    user_id: id,
+                    role_id: studentRole.id
                 },
                 transaction: t
             });
@@ -228,7 +300,7 @@ module.exports = {
                 },
                 transaction: t
             });
-            if(!status){
+            if (!status) {
                 throw new Error("Delete failed");
             }
             await t.commit();

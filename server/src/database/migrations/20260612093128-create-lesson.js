@@ -42,6 +42,11 @@ module.exports = {
         allowNull: true,
         type: Sequelize.STRING(100)
       },
+      status: {
+        allowNull: false,
+        type: Sequelize.STRING(20),
+        defaultValue: 'not_canceled'
+      },
       created_at: {
         allowNull: false,
         type: Sequelize.DATE
@@ -49,10 +54,23 @@ module.exports = {
       updated_at: {
         allowNull: false,
         type: Sequelize.DATE
+      },
+      deleted_at: {
+        allowNull: true,
+        type: Sequelize.DATE
+      },
+    });
+    await queryInterface.addConstraint('lessons', {
+      fields: ['status'],
+      type: 'check',
+      name: 'chk_lesson_status',
+      where: {
+        status: ['canceled', 'not_canceled']
       }
     });
   },
   async down(queryInterface, Sequelize) {
+    await queryInterface.removeConstraint('lessons','chk_lesson_status');
     await queryInterface.dropTable('lessons');
   }
 };

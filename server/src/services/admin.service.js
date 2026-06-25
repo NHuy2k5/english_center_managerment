@@ -1,156 +1,265 @@
-const { getUser,
-    createGeneralUser,
-    createStudent,
-    createTeacher
- } = require("./user.service");
-const { successResponse, errrorResponse } = require("../utilities/response");
-const { object, array, string, number, date } = require('yup');
-
+const { Admin,
+    User,
+    Role,
+    UserRole,
+    sequelize } = require("../models/index");
+const { Op } = require("sequelize");
+const { hashPassword } = require("../utilities/hashing")
+const { transformAdmin } = require('../transformers/admin.transformer');
+const query = (adminQuery = {}) => {
+    const hasWhere = where => where && Object.keys(where).length > 0;
+    return {
+        paranoid: false,
+        distinct: true,
+        ...(adminQuery.limit != null && { limit: adminQuery.limit }),
+        ...(adminQuery.offset != null && { offset: adminQuery.offset }),
+        ...(adminQuery.admin?.attributes?.length && { attributes: adminQuery.admin.attributes }),
+        order: [
+            ...(adminQuery.admin?.order || []),
+            ...((adminQuery.user?.order || []).map(order => [
+                { model: User, as: 'admin_user' },
+                ...order
+            ]))
+        ],
+        ...(hasWhere(adminQuery.admin?.where) && {
+            where: adminQuery.admin.where
+        }),
+        include: [
+            {
+                model: User,
+                as: 'admin_user',
+                required: true,
+                ...(adminQuery.user?.attributes?.length ? { attributes: adminQuery.user.attributes } : { attributes: { exclude: ['password'] } }),
+                ...(hasWhere(adminQuery.user?.where) && {
+                    where: adminQuery.user.where
+                })
+            },
+        ]
+    };
+}
 module.exports = {
-    show: async (req, res) => {
-        const users = await getUsers();
-        return res.json(users);
+    // Lấy tài khoản admin
+    /*
+        Nếu không lấy parent_id
+        [{
+            id: ...,
+            user_name: ...,
+            ...
+        ]}
+        Admins ban đầu return từ findAll
+        [{
+            id: ...,
+            admin_user: {
+                id: ...,
+                full_name: ...
+                ...
+            },
+        }]
+    */
+    getAdmins: async (adminQuery = {}) => {
+        let rows;
+        let count;
+        if (adminQuery.limit != null) {
+            const result = await Admin.findAndCountAll(query(adminQuery));
+            rows = result.rows.map(transformAdmin);
+            count = result.count;
+        } else {
+            rows = await Admin.findAll(query(adminQuery));
+            count = rows.length;
+            rows = rows.map(transformAdmin);
+        }
+        if (count === 0) {
+            return {
+                status: 404,
+                message: "Admins not found"
+            }
+        }
+        return {
+            status: 200,
+            data: rows,
+            count,
+            message: "Admins found"
+        };
     },
-    addGeneralUser: async (req, res) => {
-        try {
-            // Validate general user info
-            
-            const body = await schema.validate(req.body, {
-                abortEarly: false
-            });
-            const user = await createGeneralUser(body);
-
-        } catch (error) {
-            let errors = null;
-            let status = error.status;
-            let message = "Falied to create user";
-            console.log(error);
-            // Nếu validate không thành công
-            if (error.inner) {
-                errors = Object.fromEntries(error.inner.map((err) => [err.path, err.message]));
-                status = 400;
-                message = "Validation falied";
-            };
-            // return errrorResponse({
-            //     res,
-            //     messgae,
-            //     error: errors ? errors : error.message,
-            //     status: status | 500
-            // })
-            res.status(status).json({ errors });
+    getAdmin: async (id) => {
+        const admin = await Admin.findByPk(id, query())
+        if (!admin) {
+            return {
+                status: 404,
+                message: "Admin not found"
+            }
+        }
+        return {
+            status: 200,
+            data: transformAdmin(admin),
+            message: "Admin found"
         }
     },
-    addStudent: async (req, res) => {
+    createAdmin: async (data) => {
+        const t = await sequelize.transaction();
         try {
-            // Validate general user info
-            let schema = object({
-                username: string().required().test('check-unique', 'Username is already in use', async (value) => {
-                    // Nếu tồn tại user thì validate không thành công
-                    const username = await getUser(value, 'user_name');
-                    return !username;
-                }),
-                phone: string().required().matches(/0\d{9}$/).test('check-unique', 'Phone is already in use', async (value) => {
-                    const phone = await getUser(value, 'phone');
-                    return !phone;
-                }),
-                email: string().notRequired().email().test('check-unique', 'Email is already in use',async (value) => {
-                const email = await getUser(value, 'email');
-                return !email;
-                }),
-                fullname: string().required().ensure(),
-                birthday: string().required().matches(/^\d{4}-\d{2}-\d{2}$/, 'Birthday Date must be in YYYY-MM-DD format'),
-                address: string().required(),
-                sex: string().required().oneOf(['male', 'female', 'undefined'], 'Sex must be male, female, or undifined.'),
-                roles: array().of(string().required().oneOf(['admin', 'student', 'teacher', 'parent', 'general'], 'Role must be admin, student, teacher, parent or general')),
-                password: string().required().min(6)
+            const role = await Role.findOne({
+                where: {
+                    name: 'admin',
+                },
+                transaction: t
             });
-            const body = await schema.validate(req.body, {
-                abortEarly: false
-            });
-            const user = await createStudent(body);
+            if (!role) {
+                await t.rollback();
+                return {
+                    status: 404,
+                    message: "Role admin not found"
+                }
+            }
+            // Thêm thông tin user
+            const user = await User.create({
+                user_name: data.user_name,
+                phone: data.phone,
+                email: data.email,
+                full_name: data.full_name,
+                birthday: new Date(data.birthday),
+                address: data.address,
+                sex: data.sex,
+                password: await hashPassword(data.password),
+                avatar_link: data.avatar_link ?? null,
+                avatar_id: data.avatar_id ?? null,
+                created_at: new Date(),
+                updated_at: new Date()
+            }, { transaction: t });
+            // Thêm role admin
+            await UserRole.create({
+                user_id: user.id,
+                role_id: role.id,
+                created_at: new Date(),
+                updated_at: new Date()
+            }, { transaction: t });
+            // Thêm thông tin Admin
+            await Admin.create({
+                id: user.id,
+                config: data.config ?? {},
+                created_at: new Date(),
+                updated_at: new Date()
+            }, { transaction: t });
+            await t.commit();
+            const result = await Admin.findByPk(user.id, query());
 
-        } catch (error) {
-            let errors = null;
-            let status = error.status;
-            let message = "Falied to create user";
-            console.log(error);
-            // Nếu validate không thành công
-            if (error.inner) {
-                errors = Object.fromEntries(error.inner.map((err) => [err.path, err.message]));
-                status = 400;
-                message = "Validation falied";
+            return {
+                status: 201,
+                data: transformAdmin(result),
+                message: "Create success"
             };
-            // return errrorResponse({
-            //     res,
-            //     messgae,
-            //     error: errors ? errors : error.message,
-            //     status: status | 500
-            // })
-            res.status(status).json({ errors });
+        } catch (error) {
+            await t.rollback();
+            return {
+                status: 400,
+                message: error.message
+            };
         }
     },
-    addTeacher: async (req, res) => {
-        // const body = {
-        //     username: '',
-        //     phone: '',
-        //     email: '',
-        //     fullname: '',
-        //     birthday: '',
-        //     address: '',
-        //     sex: '',
-        //     roles: [],
-        //     password,
-        //     decription
-        //     status
-        // }
+    updateAdmin: async (data, id) => {
+        if (data.password) {
+            data.password = await hashPassword(data.password);
+        }
+        if (data.birthday) {
+            data.birthday = new Date(data.birthday);
+        }
+        const { config, ...userData } = data;
+        const t = await sequelize.transaction();
         try {
-            // Validate general user info
-            let schema = object({
-                username: string().required().test('check-unique', 'Username is already in use', async (value) => {
-                    // Nếu tồn tại user thì validate không thành công
-                    const username = await getUser(value, 'user_name');
-                    return !username;
-                }),
-                phone: string().required().matches(/0\d{9}$/).test('check-unique', 'Phone is already in use', async (value) => {
-                    const phone = await getUser(value, 'phone');
-                    return !phone;
-                }),
-                email: string().notRequired().email().test('check-unique', 'Email is already in use',async (value) => {
-                const email = await getUser(value, 'email');
-                return !email;
-                }),
-                fullname: string().required().ensure(),
-                birthday: string().required().matches(/^\d{4}-\d{2}-\d{2}$/, 'Birthday Date must be in YYYY-MM-DD format'),
-                address: string().required(),
-                sex: string().required().oneOf(['male', 'female', 'undefined'], 'Sex must be male, female, or undifined.'),
-                roles: array().of(string().required().oneOf(['admin', 'student', 'teacher', 'parent', 'general'], 'Role must be admin, student, teacher, parent or general')),
-                password: string().required().min(6),
-                description: string().notRequired(),
-                status: string().required().oneOf(['private','public'],'Teacher status must be private or public')
-            });
-            const body = await schema.validate(req.body, {
-                abortEarly: false
-            });
-            const user = await createStudent(body);
-
-        } catch (error) {
-            let errors = null;
-            let status = error.status;
-            let message = "Falied to create user";
-            console.log(error);
-            // Nếu validate không thành công
-            if (error.inner) {
-                errors = Object.fromEntries(error.inner.map((err) => [err.path, err.message]));
-                status = 400;
-                message = "Validation falied";
+            const admin = await Admin.findByPk(id, { transaction: t });
+            if (!admin) {
+                await t.rollback();
+                return {
+                    status: 404,
+                    message: "Admin not found"
+                };
             };
-            // return errrorResponse({
-            //     res,
-            //     messgae,
-            //     error: errors ? errors : error.message,
-            //     status: status | 500
-            // })
-            res.status(status).json({ errors });
+            if (Object.keys(userData).length) {
+                await User.update(userData,
+                    {
+                        where: { id },
+                        transaction: t
+                    });
+            };
+            if ("config" in data) {
+                await Admin.update({ config },
+                    {
+                        where: { id },
+                        transaction: t
+                    });
+            };
+            await t.commit();
+            const result = await Admin.findByPk(id, query());
+            return {
+                status: 200,
+                data: transformAdmin(result),
+                message: "Update success"
+            };
+        } catch (error) {
+            await t.rollback();
+            return {
+                status: 400,
+                message: error.message
+            };
+        }
+    },
+    deleteAdmin: async (id) => {
+        const t = await sequelize.transaction();
+        try {
+            const adminCount = await Admin.count({ transaction: t });
+            if (adminCount <= 1) {
+                await t.rollback();
+                return { status: 400, message: "Cannot delete the last admin" };
+            }
+            const admin = await Admin.findByPk(id, { transaction: t });
+            if (!admin) {
+                await t.rollback();
+                return {
+                    status: 404,
+                    message: "Admin not found"
+                };
+            };
+            // Xóa role admin
+            const adminRole = await Role.findOne({ 
+                where: { name: "admin" },
+                transaction: t
+             });
+
+            if (!adminRole) {
+                await t.rollback();
+                return {
+                    status: 404,
+                    message: "Role admin not found"
+                };
+            }
+            await UserRole.destroy({
+                where: {
+                    user_id: id,
+                    role_id: adminRole.id
+                },
+                transaction: t
+            });
+            // Xóa admin
+            const status = await User.destroy({
+                where: {
+                    id
+                },
+                transaction: t
+            });
+            if (!status) {
+                throw new Error("Delete failed");
+            }
+            await t.commit();
+            return {
+                status: 200,
+                message: "Delete success"
+            };
+        } catch (error) {
+            await t.rollback();
+            return {
+                status: 400,
+                message: error.message
+            };
         }
     }
 }

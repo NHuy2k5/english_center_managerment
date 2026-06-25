@@ -33,12 +33,12 @@ module.exports = (sequelize, DataTypes) => {
       unique: true
     },
     phone: {
-      allowNULL: false,
+      allowNull: false,
       type: DataTypes.STRING(20),
       unique: true
     },
     address: {
-      allowNULL: false,
+      allowNull: false,
       type: DataTypes.STRING(100)
     },
     category_course_id: {
@@ -48,6 +48,12 @@ module.exports = (sequelize, DataTypes) => {
   }, {
     sequelize,
     modelName: 'Registration',
+    tableName: 'registrations',
+    timestamps: true,
+    createdAt: 'created_at',
+    updatedAt: 'updated_at',
+    deletedAt: 'deleted_at',
+    paranoid: true
   });
   return Registration;
 };

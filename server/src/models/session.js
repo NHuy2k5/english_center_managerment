@@ -12,7 +12,7 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       // define association here
       Session.belongsTo(models.User, {
-        foreignKey: 'id'
+        foreignKey: 'user_id'
       })
     }
   }
@@ -20,9 +20,12 @@ module.exports = (sequelize, DataTypes) => {
     id: {
       allowNull: false,
       primaryKey: true,
+      autoIncrement: true,
       type: DataTypes.INTEGER,
-      onDelete: 'CASCADE',
-      onUpdate: 'CASCADE'
+    },
+    user_id: {
+      allowNull: false,
+      type: DataTypes.INTEGER,
     },
     refresh_token: {
       allowNull: false,
@@ -38,7 +41,8 @@ module.exports = (sequelize, DataTypes) => {
     tableName: 'sessions',
     timestamps: true,
     createdAt: 'created_at',
-    updatedAt: 'updated_at'
+    updatedAt: 'updated_at',
+    deletedAt: 'deleted_at',
   });
   return Session;
 };

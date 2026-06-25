@@ -12,7 +12,8 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       // define association here
       Parent.belongsTo(models.User, {
-        foreignKey: 'id'
+        foreignKey: 'id',
+        as: 'parent_user'
       })
       Parent.hasMany(models.Student, {
         foreignKey: 'parent_id'
@@ -42,7 +43,9 @@ module.exports = (sequelize, DataTypes) => {
     tableName: 'parents',
     timestamps: true,
     createdAt: 'created_at',
-    updatedAt: 'updated_at'
+    updatedAt: 'updated_at',
+    deletedAt: 'deleted_at',
+    paranoid: true
   });
   return Parent;
 };

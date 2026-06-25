@@ -59,13 +59,20 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: true,
       type: DataTypes.STRING(100)
     },
+    status: {
+        allowNull: false,
+        type: DataTypes.STRING(20),
+        defaultValue: 'not_canceled'
+      },
   }, {
     sequelize,
     modelName: 'Lesson',
     tableName: 'lessons',
     timestamps: true,
     createdAt: 'created_at',
-    updatedAt: 'updated_at'
+    updatedAt: 'updated_at',
+    deletedAt: 'deleted_at',
+    paranoid: true
   });
   return Lesson;
 };

@@ -18,11 +18,11 @@ module.exports = {
         type: Sequelize.STRING(100),
       },
       phone: {
-        allowNULL: false,
+        allowNull: false,
         type: Sequelize.STRING(20),
       },
       address: {
-        allowNULL: false,
+        allowNull: false,
         type: Sequelize.STRING(100)
       },
       category_course_id: {                
@@ -33,14 +33,18 @@ module.exports = {
           key: 'id'
         }
       },
-      createdAt: {
+      created_at: {
         allowNull: false,
         type: Sequelize.DATE
       },
-      updatedAt: {
+      updated_at: {
         allowNull: false,
         type: Sequelize.DATE
-      }
+      },
+      deleted_at: {
+        allowNull: true,
+        type: Sequelize.DATE
+      },
     });
   },
   async down(queryInterface, Sequelize) {

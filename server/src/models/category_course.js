@@ -17,9 +17,6 @@ module.exports = (sequelize, DataTypes) => {
       CategoryCourse.hasMany(models.Course, {
         foreignKey: 'category_course_id'
       });
-      CategoryCourse.hasMany(models.GeneralUser, {
-        foreignKey: 'category_course_id'
-      });
     }
   }
   CategoryCourse.init({
@@ -39,7 +36,7 @@ module.exports = (sequelize, DataTypes) => {
     tableName: 'category_courses',
     timestamps: true,
     createdAt: 'created_at',
-    updatedAt: 'updated_at'
+    updatedAt: 'updated_at',
   });
   return CategoryCourse;
 };

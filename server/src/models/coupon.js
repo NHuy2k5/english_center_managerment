@@ -47,18 +47,15 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: true,
       type: DataTypes.STRING
     },
-    number_of_users: {
-      allowNull: false,
-      type: DataTypes.INTEGER,
-      defaultValue: 0
-    },
   }, {
     sequelize,
     modelName: 'Coupon',
     tableName: 'coupons',
     timestamps: true,
     createdAt: 'created_at',
-    updatedAt: 'updated_at'
+    updatedAt: 'updated_at',
+    deletedAt: 'deleted_at',
+    paranoid: true
   });
   return Coupon;
 };

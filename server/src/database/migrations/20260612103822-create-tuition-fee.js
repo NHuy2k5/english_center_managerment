@@ -63,6 +63,16 @@ module.exports = {
       updated_at: {
         allowNull: false,
         type: Sequelize.DATE
+      },
+      deleted_at: {
+        allowNull: true,
+        type: Sequelize.DATE
+      },
+    }, {
+      uniqueKeys: {
+        tuition_fees_unique: {
+          fields: ['student_id', 'class_id', 'the_first_of_the_month']
+        }
       }
     });
   },

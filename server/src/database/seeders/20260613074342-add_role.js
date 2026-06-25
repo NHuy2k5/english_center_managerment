@@ -11,21 +11,25 @@ module.exports = {
     await queryInterface.bulkInsert('roles', 
     [
       {
+        id: 1,
         name: 'admin',
         created_at: new Date(),
         updated_at: new Date()
       },
       {
+        id: 2,
         name: 'student',
         created_at: new Date(),
         updated_at: new Date()
       },
       {
+        id: 3,
         name: 'teacher',
         created_at: new Date(),
         updated_at: new Date()
       },
       {
+        id: 4,
         name: 'parent',
         created_at: new Date(),
         updated_at: new Date()
@@ -39,6 +43,12 @@ module.exports = {
      *
      * Example:
     */
-    await queryInterface.bulkDelete('roles', null, {});
+    await queryInterface.bulkDelete('user_role', {
+        role_id: [1, 2, 3, 4]
+    });
+
+    await queryInterface.bulkDelete('roles', {
+        id: [1, 2, 3, 4]
+    });
   }
 };

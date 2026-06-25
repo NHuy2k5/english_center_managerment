@@ -12,7 +12,8 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       // define association here
       Course.belongsTo(models.CategoryCourse, {
-        foreignKey: 'category_course_id'
+        foreignKey: 'category_course_id',
+        as: 'course_in_category'
       });
       Course.hasMany(models.Class, {
         foreignKey: 'course_id'
@@ -35,26 +36,28 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.INTEGER,
       defaultValue: new Date().getFullYear()
     },
-    total_lessons: {
-      allowNull: false,
-      type: DataTypes.INTEGER,
-      defaultValue: 0
-    },
-    listed_price: {
-      allowNull: false,
-      type: DataTypes.DECIMAL(15, 2),
-      defaultValue: 0
-    },
     description: {
       allowNull: true,
-      type: DataTypes.TEXT
+      type: DataTypes.TEXT,
+      get() {
+        const value = this.getDataValue('description');
+        return value
+          ? JSON.parse(value)
+          : null;
+      },
+      set(value) {
+        this.setDataValue(
+          'description',
+          JSON.stringify(value)
+        );
+      }
     },
     thumbnail_link: {
-      allowNULL: true,
+      allowNull: true,
       type: DataTypes.STRING
     },
     thumbnail_id: {
-      allowNULL: true,
+      allowNull: true,
       type: DataTypes.STRING
     },
     category_course_id: {
@@ -65,11 +68,6 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING(20),
       allowNull: false,
       defaultValue: 'private'
-    },
-    discount: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      defaultValue: 0
     }
   }, {
     sequelize,
@@ -77,7 +75,9 @@ module.exports = (sequelize, DataTypes) => {
     tableName: 'courses',
     timestamps: true,
     createdAt: 'created_at',
-    updatedAt: 'updated_at'
+    updatedAt: 'updated_at',
+    deletedAt: 'deleted_at',
+    paranoid: true
   });
   return Course;
 };

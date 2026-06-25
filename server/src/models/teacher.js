@@ -12,10 +12,10 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       // define association here
       Teacher.belongsTo(models.User, {
-        foreignKey: 'id'
+        foreignKey: 'id',
+        as: 'teacher_user'
       });
-      Teacher.belongsToMany(models.Class, {
-        through: 'teacher_class',
+      Teacher.hasMany(models.TeacherClass, {
         foreignKey: 'teacher_id'
       });
       Teacher.hasMany(models.Assignment, {
@@ -40,16 +40,28 @@ module.exports = (sequelize, DataTypes) => {
       defaultValue: 0
     },
     thumbnail_link: {
-      allowNULL: true,
+      allowNull: true,
       type: DataTypes.STRING
     },
     thumbnail_id: {
-      allowNULL: true,
+      allowNull: true,
       type: DataTypes.STRING
     },
     description: {
-      allowNULL: true,
-      type: DataTypes.STRING
+      allowNull: true,
+      type: DataTypes.TEXT,
+      get() {
+        const value = this.getDataValue('description'); 
+        return value
+          ? JSON.parse(value)
+          : null;
+      },
+      set(value) {
+        this.setDataValue(
+          'description',
+          JSON.stringify(value)
+        );
+      }
     },
     status: {
       type: DataTypes.STRING(20),
@@ -62,7 +74,9 @@ module.exports = (sequelize, DataTypes) => {
     tableName: 'teachers',
     timestamps: true,
     createdAt: 'created_at',
-    updatedAt: 'updated_at'
+    updatedAt: 'updated_at',
+    deletedAt: 'deleted_at',
+    paranoid: true
   });
   return Teacher;
 };

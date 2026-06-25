@@ -37,7 +37,11 @@ module.exports = {
       read_at: {
         allowNull: true,
         type: Sequelize.DATE
-      }
+      },
+      deleted_at: {
+        allowNull: true,
+        type: Sequelize.DATE
+      },
     });
     await queryInterface.addConstraint('notifications', {
       fields: ['type'],
