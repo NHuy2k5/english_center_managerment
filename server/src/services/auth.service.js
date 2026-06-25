@@ -1,62 +1,55 @@
-const {
-    generateAccessToken,
-    generateRefreshToken
-} = require("../utils/jwt");
-const {Session, UserRole, Role, User} = require('../models/index');
+const { Session, UserRole, Role, User } = require('../models/index');
+const jwt = require('jsonwebtoken');
 const { comparePassword } = require("../utilities/hashing");
 const dayjs = require('dayjs')
-
-const login = async(identifier, password)=>{
+const { Op } = require('sequelize')
+const { generateAccessToken, generateRefreshToken } = require('../utilities/jwt');
+const login = async (identifier, password) => {
     const user = await User.findOne({
-        where:{
-            [Op.or]:[
-                {
-                    email: identifier
-                },
-                {
-                    user_name: identifier
-                },
-                {
-                    phone: identifier
-                }
+        where: {
+            [Op.or]: [
+                { email: identifier },
+                { user_name: identifier },
+                { phone: identifier }
             ]
         },
-        include: {
-          model: UserRole,
-          required: true,
-          attributes: ['role_id'],
-          include: [{
-            model: Role,
-            required: true,
-            attributes: ['name'],
-          }]
-        }
+        paranoid: false
     });
-    if(!user){
-        throw new Error("User not found");
+    console.log('user found:', user?.id, user?.phone, user?.deleted_at);
+    if (!user) {
+        throw Error('Invalid credentials');
     }
+
+    const userRole = await UserRole.findOne({
+        where: { user_id: user.id },
+        include: [{
+            model: Role,
+            attributes: ['name']
+        }]
+    });
+    
     const checkPassword = await comparePassword(password, user.password);
-    if(!checkPassword){
+    if (!checkPassword) {
         throw new Error("Wrong password");
     }
     const accessToken = generateAccessToken(user);
     const refreshToken = generateRefreshToken(user);
-        // lưu refresh token DB
-      await Session.create({
+    // lưu refresh token DB
+    await Session.create({
         user_id: user.id,
         refresh_token: refreshToken,
         expire_at: dayjs().add(7, "day").toDate()
-      });
+    });
     return {
-        user:{
-            id:user.id,
+        user: {
+            id: user.id,
             user_name: user.user_name,
-            email:user.email,
+            email: user.email,
             phone: user.phone,
-            role:user.UserRole.Role.name,
+            role: userRole?.Role?.name || null,
         },
-        access_token,
-        refresh_token
+        access_token: accessToken,
+        refresh_token: refreshToken
     };
 }
 const refreshToken = async (refreshtoken) => {
@@ -87,10 +80,10 @@ const refreshToken = async (refreshtoken) => {
         accessToken
     };
 };
-const logout = async(refreshToken)=>{
+const logout = async (refreshToken) => {
     await Session.destroy({
-        where:{
-            refresh_token:refreshToken
+        where: {
+            refresh_token: refreshToken
         }
     });
 }

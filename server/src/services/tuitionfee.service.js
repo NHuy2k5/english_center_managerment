@@ -351,4 +351,4 @@ const payTuitionFeesMultiple = async ({
     }
 };
 
-module.exports = { previewMonthlyTuitionFees, payTuitionFees, payTuitionFeesMultiple };
+module.exports = { previewMonthlyTuitionFees, payTuitionFeesMultiple };

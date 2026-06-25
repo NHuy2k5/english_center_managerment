@@ -42,7 +42,7 @@ module.exports = {
                 await refreshToken(refresh_token);
             res.json(data);
         } catch (error) {
-            res.json(400).json({
+            res.status(400).json({
                 message: error.message
             })
         }

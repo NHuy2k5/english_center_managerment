@@ -7,7 +7,7 @@ const startSessionCleanupJob = () => {
         try {
             const deleted = await Session.destroy({
                 where: {
-                    expiresAt: {
+                    expire_at: {
                         [Op.lte]: new Date() // Xóa nếu expiresAt nhỏ hơn hoặc bằng thời gian hiện tại
                     }
                 }

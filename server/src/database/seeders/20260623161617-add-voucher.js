@@ -1,6 +1,6 @@
 'use strict';
 
-const { Coupon } = require("../models/index");
+const { Coupon } = require("../../models/index");
 
 module.exports = {
     async up() {
@@ -59,7 +59,7 @@ module.exports = {
                 name: 'EARLYBIRD25',
                 discount: 25,
                 start: now,
-                end: next9Month,
+                end: next9Months,
                 description: 'Ưu đãi đăng ký sớm giảm 25%.',
                 created_at: now,
                 updated_at: now
@@ -68,7 +68,7 @@ module.exports = {
                 name: 'VIP30',
                 discount: 30,
                 start: now,
-                end: next3Months,
+                end: next9Months,
                 description: 'Ưu đãi đặc biệt cho học viên thân thiết.',
                 created_at: now,
                 updated_at: now
@@ -77,7 +77,7 @@ module.exports = {
     },
 
     async down() {
-        await Discount.destroy({
+        await Coupon.destroy({
             where: {
                 name: [
                     'WELCOME10',

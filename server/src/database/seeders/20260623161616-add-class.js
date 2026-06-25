@@ -1,6 +1,6 @@
 'use strict';
 
-const { Course, Class } = require("../models/index");
+const { Course, Class } = require("../../models/index");
 
 module.exports = {
     async up() {
@@ -22,7 +22,7 @@ module.exports = {
 
                 classes.push({
                     name: `${grade}${letter}`,
-                    total_students: 0,
+                    total_students: 50,
                     course_id: course.id,
                     status: 'opened',
                     created_at: new Date(),
@@ -36,8 +36,11 @@ module.exports = {
     },
 
     async down() {
+        const { Op } = require('sequelize');
+        const courses = await Course.findAll({ attributes: ['id'] });
+        const courseIds = courses.map(c => c.id);
         await Class.destroy({
-            where: {}
+            where: { course_id: { [Op.in]: courseIds } }
         });
     }
 };

@@ -5,7 +5,7 @@ const {
     Student,
     UserRole,
     Role
-} = require("../models/index");
+} = require("../../models/index");
 const { hashPassword } = require('../../utilities/hashing');
 
 module.exports = {
@@ -18,7 +18,7 @@ module.exports = {
                 name: 'student'
             }
         });
-
+        console.log('studentRole:', studentRole?.id, studentRole?.name);
         const password = await hashPassword('123456');
 
         const studentsData = [
@@ -60,34 +60,84 @@ module.exports = {
         ];
 
         for (const data of studentsData) {
+            let user;
+            try {
+                user = await User.create({
+                    ...data,
+                    password,
+                    birthday: new Date('2015-01-01'),
+                    address: 'Hà Nội',
+                    created_at: now,
+                    updated_at: now
+                });
+                console.log('user created:', user?.id, user?.user_name, user?.deleted_at);
+            } catch (err) {
+                // Nếu đã tồn tại thì lấy ra dùng tiếp
+                console.log('create error:', err.name, err.message);
+                if (err.name === 'SequelizeUniqueConstraintError') {
+                    user = await User.findOne({
+                        where: { user_name: data.user_name },
+                        paranoid: false
+                    },);
+                    if (user && user.deleted_at) {
+                        await user.restore();
+                        // Update password phòng trường hợp đã đổi
+                        await user.update({
+                            password,
+                            updated_at: now
+                        });
+                    }
+                    console.log('user found after error:', user?.id, user?.deleted_at);
+                } else {
+                    throw err;
+                }
+            }
 
-            const user = await User.create({
-                ...data,
-                password,
-                birthday: new Date('2015-01-01'),
-                address: 'Hà Nội',
-                created_at: now,
-                updated_at: now
-            });
+            if (!user) continue;
 
-            await Student.create({
-                id: user.id,
-                parent_id: null,
-                created_at: now,
-                updated_at: now
-            });
+            try {
+                await Student.create({
+                    id: user.id,
+                    parent_id: null,
+                    created_at: now,
+                    updated_at: now
+                });
+            } catch (err) {
+                if (err.name === 'SequelizeUniqueConstraintError') {
+                    const student = await Student.findOne({
+                        where: { id: user.id },
+                        paranoid: false
+                    });
+                    if (student?.deleted_at) await student.restore(); // ✅
+                } else {
+                    throw err;
+                }
+            }
 
-            await UserRole.create({
-                user_id: user.id,
-                role_id: studentRole.id,
-                created_at: now,
-                updated_at: now
-            });
+            try {
+                await UserRole.create({
+                    user_id: user.id,
+                    role_id: studentRole.id,
+                    created_at: now,
+                    updated_at: now
+                });
+            } catch (err) {
+                if (err.name === 'SequelizeUniqueConstraintError') {
+                    const ur = await UserRole.findOne({
+                        where: { user_id: user.id, role_id: studentRole.id },
+                        paranoid: false
+                    });
+                    if (ur?.deleted_at) await ur.restore(); // ✅
+                } else {
+                    throw err;
+                }
+            }
         }
     },
 
     async down() {
-
+        const { Session } = require("../../models/index"); // ✅ thêm import
+        const { Op } = require('sequelize');
         const usernames = [
             'student01',
             'student02',
@@ -103,23 +153,30 @@ module.exports = {
         });
 
         const ids = users.map(u => u.id);
+        await Session.destroy({
+            where: { user_id: { [Op.in]: ids } },
+            force: true
+        });
 
         await UserRole.destroy({
             where: {
                 user_id: ids
-            }
+            },
+            force: true
         });
 
         await Student.destroy({
             where: {
                 id: ids
-            }
+            },
+            force: true
         });
 
         await User.destroy({
             where: {
                 id: ids
-            }
+            },
+            force: true
         });
     }
 };

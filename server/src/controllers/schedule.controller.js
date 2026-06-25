@@ -3,7 +3,7 @@ const { getSchedules } = require("../services/schedule.service");
 const getSchedulesController = async (req, res) => {
     try {
         const userID = Number(req.user.id);
-        const {status, ...result} = await getSchedules(userID),
+        const {status, ...result} = await getSchedules(userID);
         if('data' in result) {
             return res.status(status).json(result);
         }

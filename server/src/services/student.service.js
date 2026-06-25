@@ -13,6 +13,7 @@ const { transformStudent } = require('../transformers/student.transformer');
 const query = (studentQuery = {}) => {
     const hasWhere = where => where && Object.keys(where).length > 0;
     return {
+        paranoid: false,
         distinct: true,
         ...(studentQuery.limit != null && { limit: studentQuery.limit }),
         ...(studentQuery.offset != null && { offset: studentQuery.offset }),
@@ -40,10 +41,11 @@ const query = (studentQuery = {}) => {
             {
                 model: Parent,
                 required: false,
+                attributes: ['id', 'balance'],
                 include: [{
                     model: User,
                     as: 'parent_user',
-                    attributes: ["id", "full_name", "avatar_id", "avatar_link", "balance"]
+                    attributes: ["full_name", "avatar_id", "avatar_link"]
                 }]
             }
         ]
@@ -280,13 +282,6 @@ module.exports = {
             await StudentLesson.destroy({
                 where: {
                     student_id: id
-                },
-                transaction: t
-            });
-            // Xóa role student
-            const studentRole = await Role.findOne({
-                where: {
-                    name: "student"
                 },
                 transaction: t
             });

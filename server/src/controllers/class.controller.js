@@ -103,7 +103,7 @@ const addToClass = async (req, res) => {
         return res.status(500).json({ message: error.message });
     }
 }
-const removeFromClass = async (res, res) => {
+const removeFromClass = async (req, res) => {
     try {
         const data = req.body;
         /*

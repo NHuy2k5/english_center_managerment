@@ -64,8 +64,8 @@ router.get(
 // students
 router.get(
     '/students',
-    authenticate,
-    authorize('admin'),
+    // authenticate,
+    // authorize('admin'),
     resourceHelper('students'),
     buildQuery,
     getStudentsController

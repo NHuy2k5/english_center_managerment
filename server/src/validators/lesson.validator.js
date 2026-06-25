@@ -4,7 +4,7 @@ const createLessonSchema = object({
     body: object({
         name: string().required(),
         start: date().required(),
-        end: date().required().min(ref(start), 'End date must be after start date'),
+        end: date().required().min(ref('start'), 'End date must be after start date'),
         description: string().notRequired(),
         listed_price: number().required().test('check-value-price', 'Total price must be greater or equal 0', (value) => value >= 0),
         address: string().required(),

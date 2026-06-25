@@ -5,6 +5,6 @@ module.exports = {
         return bycript.hashSync(password, saltRound);
     },
     comparePassword: async (password, passwordCompare) => {
-        return await bcrypt.compare(password,passwordCompare);
+        return await bycript.compare(password,passwordCompare);
     }
 }

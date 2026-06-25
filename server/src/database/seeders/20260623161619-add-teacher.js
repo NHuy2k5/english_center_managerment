@@ -1,70 +1,90 @@
-// add-parent.js
+// add-teacher.js
 'use strict';
 
-const { User, Parent, Role, UserRole } = require("../../models/index");
 const { hashPassword } = require('../../utilities/hashing');
+const { User, Teacher, Role, UserRole } = require("../../models/index");
 
 module.exports = {
     async up() {
         const now = new Date();
 
-        const parentRole = await Role.findOne({
-            where: { name: 'parent' }
+        const teacherRole = await Role.findOne({
+            where: { name: 'teacher' }
         });
 
         const password = hashPassword('123456');
 
-        const parentsData = [
+        const teachersData = [
             {
-                user_name: 'parent01',
-                full_name: 'Nguyễn Văn Minh',
-                email: 'parent01@gmail.com',
-                phone: '0910000001',
-                sex: 'male',
-                balance: 5000000
-            },
-            {
-                user_name: 'parent02',
-                full_name: 'Trần Thị Lan',
-                email: 'parent02@gmail.com',
-                phone: '0910000002',
+                user_name: 'teacher01',
+                full_name: 'Nguyễn Thị Thu',
+                email: 'teacher01@gmail.com',
+                phone: '0920000001',
                 sex: 'female',
-                balance: 3000000
+                description: [
+                    'Cử nhân Ngôn ngữ Anh - Đại học Hà Nội',
+                    '5 năm kinh nghiệm giảng dạy tiếng Anh tiểu học',
+                    'IELTS 7.5'
+                ]
             },
             {
-                user_name: 'parent03',
-                full_name: 'Lê Văn Hùng',
-                email: 'parent03@gmail.com',
-                phone: '0910000003',
+                user_name: 'teacher02',
+                full_name: 'Trần Minh Quân',
+                email: 'teacher02@gmail.com',
+                phone: '0920000002',
                 sex: 'male',
-                balance: 7000000
+                description: [
+                    'Thạc sĩ Ngôn ngữ Anh',
+                    'Chuyên luyện thi THCS',
+                    'IELTS 8.0'
+                ]
             },
             {
-                user_name: 'parent04',
-                full_name: 'Phạm Thị Mai',
-                email: 'parent04@gmail.com',
-                phone: '0910000004',
+                user_name: 'teacher03',
+                full_name: 'Lê Ngọc Anh',
+                email: 'teacher03@gmail.com',
+                phone: '0920000003',
                 sex: 'female',
-                balance: 2500000
+                description: [
+                    'Cử nhân Sư phạm Anh',
+                    '7 năm kinh nghiệm giảng dạy',
+                    'TESOL'
+                ]
             },
             {
-                user_name: 'parent05',
-                full_name: 'Hoàng Văn Đức',
-                email: 'parent05@gmail.com',
-                phone: '0910000005',
+                user_name: 'teacher04',
+                full_name: 'Phạm Văn Đức',
+                email: 'teacher04@gmail.com',
+                phone: '0920000004',
                 sex: 'male',
-                balance: 10000000
+                description: [
+                    'Giảng viên tiếng Anh',
+                    'Chuyên luyện thi IELTS',
+                    'IELTS 8.5'
+                ]
+            },
+            {
+                user_name: 'teacher05',
+                full_name: 'Hoàng Thị Mai',
+                email: 'teacher05@gmail.com',
+                phone: '0920000005',
+                sex: 'female',
+                description: [
+                    'Cử nhân Ngôn ngữ Anh',
+                    'Chuyên tiếng Anh thiếu nhi',
+                    'Cambridge TKT'
+                ]
             }
         ];
 
-        for (const data of parentsData) {
+        for (const data of teachersData) {
             let user;
             try {
                 user = await User.create({
                     user_name: data.user_name,
                     password,
                     full_name: data.full_name,
-                    birthday: new Date('1985-01-01'),
+                    birthday: new Date('1990-01-01'),
                     sex: data.sex,
                     email: data.email,
                     phone: data.phone,
@@ -74,10 +94,7 @@ module.exports = {
                 });
             } catch (err) {
                 if (err.name === 'SequelizeUniqueConstraintError') {
-                    user = await User.findOne({
-                        where: { user_name: data.user_name },
-                        paranoid: false
-                    },);
+                    user = await User.findOne({ where: { user_name: data.user_name }, paranoid: false });
                     if (user && user.deleted_at) {
                         await user.restore();
                         // Update password phòng trường hợp đã đổi
@@ -95,19 +112,24 @@ module.exports = {
             if (!user) continue;
 
             try {
-                await Parent.create({
+                await Teacher.create({
                     id: user.id,
-                    balance: data.balance,
+                    balance: 0,
+                    thumbnail_link: null,
+                    thumbnail_id: null,
+                    description: data.description,
+                    status: 'public',
                     created_at: now,
                     updated_at: now
                 });
             } catch (err) {
+                // Nếu đã tồn tại thì lấy ra dùng tiếp
                 if (err.name === 'SequelizeUniqueConstraintError') {
-                    const parent = await Parent.findOne({
+                    const teacher = await Teacher.findOne({
                         where: { id: user.id },
                         paranoid: false
                     });
-                    if (parent?.deleted_at) await parent.restore(); // ✅
+                    if (teacher?.deleted_at) await teacher.restore(); // ✅
                 } else {
                     throw err;
                 }
@@ -115,19 +137,17 @@ module.exports = {
             try {
                 await UserRole.create({
                     user_id: user.id,
-                    role_id: parentRole.id,
+                    role_id: teacherRole.id,
                     created_at: now,
                     updated_at: now
                 });
             } catch (err) {
                 if (err.name === 'SequelizeUniqueConstraintError') {
                     const ur = await UserRole.findOne({
-                        where: { user_id: user.id, role_id: parentRole.id },
+                        where: { user_id: user.id, role_id: teacherRole.id },
                         paranoid: false
                     });
                     if (ur?.deleted_at) await ur.restore(); // ✅
-                } else {
-                    throw err;
                 }
             }
         }
@@ -136,16 +156,15 @@ module.exports = {
     async down() {
         const { Session } = require("../../models/index"); // ✅ thêm import
         const { Op } = require('sequelize');
-        const usernames = ['parent01', 'parent02', 'parent03', 'parent04', 'parent05'];
+        const usernames = ['teacher01', 'teacher02', 'teacher03', 'teacher04', 'teacher05'];
         const users = await User.findAll({ where: { user_name: usernames } });
         const ids = users.map(u => u.id);
         await Session.destroy({
             where: { user_id: { [Op.in]: ids } },
             force: true
         });
-
         await UserRole.destroy({ where: { user_id: ids }, force: true });
-        await Parent.destroy({ where: { id: ids }, force: true });
+        await Teacher.destroy({ where: { id: ids }, force: true });
         await User.destroy({ where: { id: ids }, force: true });
     }
 };

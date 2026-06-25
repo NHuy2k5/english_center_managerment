@@ -1,6 +1,6 @@
 'use strict';
 
-const { Class, Lesson } = require("../models/index");
+const { Class, Lesson } = require("../../models/index");
 
 module.exports = {
     async up() {
@@ -65,8 +65,11 @@ module.exports = {
 
     async down() {
 
+        const classes = await Class.findAll({ attributes: ['id'] });
+        const classIds = classes.map(c => c.id);
+        const { Op } = require('sequelize');
         await Lesson.destroy({
-            where: {}
+            where: { class_id: { [Op.in]: classIds } }
         });
 
     }

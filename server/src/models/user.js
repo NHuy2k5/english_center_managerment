@@ -11,6 +11,9 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
+      User.hasMany(models.UserRole, {
+        foreignKey: 'user_id',
+      });
       User.hasOne(models.Student, {
         foreignKey: 'id'
       });
@@ -19,10 +22,6 @@ module.exports = (sequelize, DataTypes) => {
       });
       User.hasOne(models.Teacher, {
         foreignKey: 'id'
-      });
-      User.belongsToMany(models.Role, {
-        through: 'user_role',
-        foreignKey: 'user_id'
       });
       User.hasOne(models.Session, {
         foreignKey: 'user_id'
@@ -89,6 +88,7 @@ module.exports = (sequelize, DataTypes) => {
     timestamps: true,
     createdAt: 'created_at',
     updatedAt: 'updated_at',
+    deletedAt: 'deleted_at',
     paranoid: true
   });
   return User;

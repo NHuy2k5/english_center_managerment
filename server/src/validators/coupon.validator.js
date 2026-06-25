@@ -5,7 +5,7 @@ const createCouponSchema = object({
         name: string().required(),
         discount: number().required().test('check-valid-discount-value', 'Discount value is invalid', (value) => value >= 0 && value <= 100),
         start: date().notRequired(),
-        end: date().notRequired().min(ref(start), 'End date must be after start date'),
+        end: date().notRequired().min(ref('start'), 'End date must be after start date'),
         description: string().notRequired()
     })
 });

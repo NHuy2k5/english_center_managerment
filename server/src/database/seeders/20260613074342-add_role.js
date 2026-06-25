@@ -43,6 +43,12 @@ module.exports = {
      *
      * Example:
     */
-    await queryInterface.bulkDelete('roles', null, {});
+    await queryInterface.bulkDelete('user_role', {
+        role_id: [1, 2, 3, 4]
+    });
+
+    await queryInterface.bulkDelete('roles', {
+        id: [1, 2, 3, 4]
+    });
   }
 };

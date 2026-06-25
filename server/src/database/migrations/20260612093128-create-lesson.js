@@ -54,14 +54,18 @@ module.exports = {
       updated_at: {
         allowNull: false,
         type: Sequelize.DATE
-      }
+      },
+      deleted_at: {
+        allowNull: true,
+        type: Sequelize.DATE
+      },
     });
     await queryInterface.addConstraint('lessons', {
       fields: ['status'],
       type: 'check',
       name: 'chk_lesson_status',
       where: {
-        name: ['canceled', 'not_canceled']
+        status: ['canceled', 'not_canceled']
       }
     });
   },
