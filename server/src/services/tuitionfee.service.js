@@ -27,18 +27,26 @@ const calculateTuitionAggregate = async ({
     month,
     year
 }) => {
+    // Format YYYY-MM-DD HH:mm:ss trực tiếp, không qua Date object
+    const startDate = `${year}-${String(month).padStart(2, '0')}-01 00:00:00`;
 
-    const startDate = dayjs()
-        .year(year)
-        .month(month - 1)
-        .startOf('month')
-        .toDate();
+    // Tính ngày cuối tháng
+    const lastDay = new Date(year, month, 0).getDate(); // getDate() trả về ngày cuối tháng
+    const endDate = `${year}-${String(month).padStart(2, '0')}-${lastDay} 23:59:59`;
+    console.log('---------------startDate:', startDate);
+    console.log('---------------endDate:', endDate);
 
-    const endDate = dayjs()
-        .year(year)
-        .month(month - 1)
-        .endOf('month')
-        .toDate();
+    // const startDate = dayjs()
+    //     .year(year)
+    //     .month(month - 1)
+    //     .startOf('month')
+    //     .toDate();
+
+    // const endDate = dayjs()
+    //     .year(year)
+    //     .month(month - 1)
+    //     .endOf('month')
+    //     .toDate();
 
     const tuition =
         await StudentLesson.findAll({

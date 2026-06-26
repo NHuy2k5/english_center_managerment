@@ -1,7 +1,11 @@
 const cron = require('node-cron');
 const dayjs = require('dayjs');
 const { generateMonthlyTeacherSalary } = require('../services/monthlysalary.service');
-
+const utc = require('dayjs/plugin/utc');
+const timezone = require('dayjs/plugin/timezone');
+dayjs.extend(utc);
+dayjs.extend(timezone);
+const TZ = 'Asia/Ho_Chi_Minh';
 const startGenerateSalaryJob = () => {
     // Chạy vào 00:00 ngày 1 hàng tháng
     // ┌─ giây (optional)
@@ -12,10 +16,11 @@ const startGenerateSalaryJob = () => {
     // │ │ │ │ │ ┌─ ngày trong tuần
     // │ │ │ │ │ │
     // 0  0  0  1  *  *
-    cron.schedule('0 0 0 1 * *', async () => {
+    cron.schedule('* * * * *', async () => {
         try {
             // Lấy tháng vừa kết thúc
-            const lastMonth = dayjs().subtract(1, 'month');
+            const lastMonth = dayjs().tz(TZ); // Dùng để test 
+            // const lastMonth = dayjs().subtract(1, 'month'); --- Trong production
             const month = lastMonth.month() + 1;
             const year = lastMonth.year();
 

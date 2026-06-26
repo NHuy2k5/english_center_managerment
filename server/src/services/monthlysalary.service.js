@@ -9,8 +9,13 @@ const { Student,
     sequelize,
     Sequelize } = require("../models/index");
 const { Op, fn, col, literal } = require('sequelize');
-const {transformSalary} = require('../transformers/monthlyTeacherSalary.transformer');
+const { transformSalary } = require('../transformers/monthlyTeacherSalary.transformer');
+const utc = require('dayjs/plugin/utc');
+const timezone = require('dayjs/plugin/timezone');
 const dayjs = require('dayjs');
+dayjs.extend(utc);
+dayjs.extend(timezone);
+const TZ = 'Asia/Ho_Chi_Minh';
 /*  req.body
     {
         "teacher_ids": [1,2,3],
@@ -25,17 +30,28 @@ const generateMonthlyTeacherSalary = async ({
     year,
 }) => {
 
-    const startDate = dayjs()
-        .year(year)
-        .month(month - 1)
-        .startOf('month')
-        .toDate();
+    // Format YYYY-MM-DD HH:mm:ss trực tiếp, không qua Date object
+    const startDate = `${year}-${String(month).padStart(2, '0')}-01 00:00:00`;
 
-    const endDate = dayjs()
-        .year(year)
-        .month(month - 1)
-        .endOf('month')
-        .toDate();
+    // Tính ngày cuối tháng
+    const lastDay = new Date(year, month, 0).getDate(); // getDate() trả về ngày cuối tháng
+    const endDate = `${year}-${String(month).padStart(2, '0')}-${lastDay} 23:59:59`;
+    console.log('---------------startDate:', startDate);
+    console.log('---------------endDate:', endDate);
+
+    // const startDate = dayjs()
+    //     .tz(TZ)
+    //     .year(year)
+    //     .month(month - 1)
+    //     .startOf('month')
+    //     .toDate();
+
+    // const endDate = dayjs()
+    //     .tz(TZ)
+    //     .year(year)
+    //     .month(month - 1)
+    //     .endOf('month')
+    //     .toDate();
 
     const rows = await Assignment.findAll({
         where: {
@@ -51,12 +67,10 @@ const generateMonthlyTeacherSalary = async ({
             'teacher_id',
 
             [
-                fn('COUNT',col('assignment_lesson.id')),'total_lessons'
+                fn('COUNT', literal('`assignment_lesson`.`id`')), 'total_lessons'
             ],
 
-            [
-                literal(`COUNT(assignment_lesson.id) * Assignment.pay_per_lesson`),
-                'salary'
+            [literal('COUNT(`assignment_lesson`.`id`) * `Assignment`.`pay_per_lesson`'), 'salary'
             ]
         ],
 
@@ -74,8 +88,10 @@ const generateMonthlyTeacherSalary = async ({
 
                     start: {
                         [Op.between]: [
-                            startDate,
-                            endDate
+                            // startDate,
+                            // endDate
+                            literal(`'${startDate}'`), // ✅ truyền thẳng string vào SQL
+                            literal(`'${endDate}'`)
                         ]
                     }
                 }
@@ -88,13 +104,20 @@ const generateMonthlyTeacherSalary = async ({
         ],
 
         group: [
-            'Assignment.id',
+            // 'Assignment.id',
             'Assignment.teacher_id',
             'Assignment.pay_per_lesson'
         ],
 
-        raw: true
+        raw: true,
+        logging: (sql) => console.log('GENERATED SQL:', sql)
     });
+
+    console.log('rows length:', rows.length);
+    console.log('rows:', JSON.stringify(rows, null, 2));
+    console.log('startDate:', startDate);
+    console.log('endDate:', endDate);
+    console.log('teacherIds:', teacherIds);
 
     const grouped = {};
 
@@ -145,7 +168,8 @@ const generateMonthlyTeacherSalary = async ({
         {
             updateOnDuplicate: [
                 'total_lessons_teached',
-                'monthly_salary'
+                'monthly_salary',
+                'updated_at'
             ]
         }
     );
@@ -161,12 +185,12 @@ const getMonthlyTeacherSalaries = async ({
     _pagination = null      // ✅ thêm
 }) => {
     let startDate = null;
-    if(month && year){
-    startDate = dayjs()
-        .year(year)
-        .month(month - 1)
-        .startOf('month')
-        .format('YYYY-MM-DD');
+    if (month && year) {
+        startDate = dayjs()
+            .year(year)
+            .month(month - 1)
+            .startOf('month')
+            .format('YYYY-MM-DD');
     }
     const where = _queryOptions?.where ?? {
         ...(month && year
@@ -200,7 +224,7 @@ const getMonthlyTeacherSalaries = async ({
             }
         ]
     });
-    if(salaries.length === 0){
+    if (salaries.length === 0) {
         return {
             status: 404,
             message: 'Salaries not found'
@@ -264,9 +288,9 @@ const payTeacherSalary = async (
                 teacherBalanceMap.get(
                     teacherId
                 ) +
-                    Number(
-                        salary.monthly_salary
-                    )
+                Number(
+                    salary.monthly_salary
+                )
             );
 
             salary.is_teacher_paid =
@@ -319,9 +343,9 @@ const payTeacherSalary = async (
             status: 200,
             data: {
                 paidTeachers:
-                teacherIds.length,
+                    teacherIds.length,
                 paidMonths:
-                salaries.length
+                    salaries.length
             }
         };
 
@@ -334,4 +358,4 @@ const payTeacherSalary = async (
     }
 };
 
-module.exports = {generateMonthlyTeacherSalary,payTeacherSalary, getMonthlyTeacherSalaries}
+module.exports = { generateMonthlyTeacherSalary, payTeacherSalary, getMonthlyTeacherSalaries }

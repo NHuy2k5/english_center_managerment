@@ -10,7 +10,8 @@ const startSessionCleanupJob = () => {
                     expire_at: {
                         [Op.lte]: new Date() // Xóa nếu expiresAt nhỏ hơn hoặc bằng thời gian hiện tại
                     }
-                }
+                },
+                force: true
             });
             console.log(`[CRON] Deleted ${deleted} expired sessions`);
         } catch (error) {
