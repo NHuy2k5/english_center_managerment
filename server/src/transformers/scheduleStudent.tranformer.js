@@ -10,16 +10,16 @@ exports.transformScheduleStudent = (schedule) => {
             ...student_user
         },
     };
-    const { Class, Assignment, ...lessonData } = Lesson;
+    const { Class, assignments, ...lessonData } = Lesson; // ✅ Assignments (số nhiều) theo Sequelize
+
+    // Lấy assignment đầu tiên (1 lesson thường có 1 teacher)
+    const assignment = assignments?.[0];
+
     result.lesson = {
         ...lessonData,
-        class_name: Class?.name
+        class_name: Class?.name,
+        teacher_id: assignment?.teacher_id || null,           // ✅ thêm vào lesson
+        teacher_name: assignment?.Teacher?.teacher_user?.full_name || null // ✅
     };
-    if (Assignment) {
-        result.teacher = {
-            id: Assignment.teacher_id,
-            full_name: Assignment.Teacher?.teacher_user?.full_name
-        }
-    }
     return result;
 };

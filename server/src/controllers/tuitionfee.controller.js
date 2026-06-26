@@ -1,4 +1,5 @@
-const { payTuitionFeesMultiple } = require("../services/tuitionfee.service");
+const { TuitionFee } = require('../models/index');
+const { payTuitionFeesMultiple, previewMonthlyTuitionFees } = require("../services/tuitionfee.service");
 
 const getTuitionFeesController = async (req, res) => {
     try {
@@ -63,7 +64,7 @@ const payTuitionFeesMultipleController = async (req, res) => {
 
         const result = await payTuitionFeesMultiple({
             parentId:   parseInt(parent_id),
-            studentIds,
+            studentIds: student_ids,
             months,
             couponId:   coupon_id ? parseInt(coupon_id) : null
         });

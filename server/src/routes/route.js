@@ -64,16 +64,16 @@ router.get(
 // students
 router.get(
     '/students',
-    // authenticate,
-    // authorize('admin'),
+    authenticate,
+    authorize('admin'),
     resourceHelper('students'),
     buildQuery,
     getStudentsController
 )
 router.get(
     '/students/:studentID',
-    // authenticate,
-    // authorize('admin'),
+    authenticate,
+    authorize('admin'),
     getStudentController
 )
 router.post(
@@ -138,8 +138,8 @@ router.delete(
 // parents
 router.get(
     '/parents',
-    // authenticate,
-    // authorize('admin'),
+    authenticate,
+    authorize('admin'),
     resourceHelper('parents'),
     buildQuery,
     getParentsController
@@ -174,8 +174,8 @@ router.delete(
 // registration
 router.get(
     '/registrations',
-    // authenticate,
-    // authorize('admin'),
+    authenticate,
+    authorize('admin'),
     resourceHelper('registrations'),
     buildQuery,
     getRegistrationsController
@@ -201,16 +201,16 @@ router.delete(
 // coupon
 router.get(
     '/coupons',
-    // authenticate,
-    // authorize('admin', 'parent'),
+    authenticate,
+    authorize('admin', 'parent'),
     resourceHelper('coupons'),
     buildQuery,
     getCouponsController
 )
 router.get(
     '/coupons/:couponID',
-    // authenticate,
-    // authorize('admin', 'parent'),
+    authenticate,
+    authorize('admin', 'parent'),
     getCouponController
 )
 router.post(

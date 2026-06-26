@@ -34,6 +34,7 @@ const query = (assignmentQuery = {}) => {
             {
                 model: Lesson,
                 required: true,
+                as: 'assignment_lesson',
                 attributes: {
                     exclude: ['listed_price', 'class_id']
                 },

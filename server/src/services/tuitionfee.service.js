@@ -76,9 +76,9 @@ const calculateTuitionAggregate = async ({
                             [Op.lte]: Sequelize.literal(
                                 `
                                 CASE
-                                WHEN Student->StudentClass.left_at IS NOT NULL
-                                THEN Student->StudentClass.left_at
-                                ELSE '${endDate}'
+                                WHEN \`StudentClass\`.\`left_at\` IS NOT NULL
+                                THEN \`StudentClass\`.\`left_at\`
+                                ELSE '${dayjs(endDate).format('YYYY-MM-DD HH:mm:ss')}'
                                 END
                                 `
                             )
@@ -118,7 +118,7 @@ const calculateTuitionAggregate = async ({
                                 Sequelize.where(
                                     Sequelize.col("Lesson.start"),
                                     Op.lte,
-                                    Sequelize.col("Student->StudentClass.left_at")
+                                    Sequelize.col("StudentClasses.left_at")
                                 )
                             ]
                         },
@@ -142,20 +142,28 @@ const calculateTuitionAggregate = async ({
                     Sequelize.col("Lesson->Class.name"), "class_name",
                 ],
                 [
-                    Sequelize.fn("COUNT", Sequelize.col("StudentLesson.id")),
+                    // Sequelize.fn("COUNT", Sequelize.literal("`student_lesson`.`id`")),
+                    Sequelize.fn("COUNT", Sequelize.literal("*")),
                     "total_reality_lessons"
                 ],
                 [
-                    Sequelize.fn("SUM", Sequelize.col("Lesson.listed_price")),
+                    Sequelize.fn("SUM", Sequelize.literal("`lessons`.`listed_price`")),
                     "actual_listed_tuition_fee"
                 ],
             ],
+            includeIgnoreAttributes: false,
             group: [
-                "StudentLesson.student_id",
-                "Student.id",
-                "Student->student_user.full_name",
-                "Lesson.class_id",
-                "Lesson->Class.id"
+                // "StudentLesson.student_id",
+                // "StudentLesson.id",
+                // "Student.id",
+                // "Student->student_user.full_name",
+                // "Lesson.class_id",
+                // "Lesson->Class.id"
+                Sequelize.literal("`student_lesson`.`student_id`"),
+                Sequelize.literal("`students`.`id`"),
+                Sequelize.literal("`Student->student_user`.`full_name`"),
+                Sequelize.literal("`lessons`.`class_id`"),
+                Sequelize.literal("`Lesson->Class`.`id`")
             ]
         });
     return tuition;
@@ -261,7 +269,7 @@ const payTuitionFeesMultiple = async ({
         // 2. Kiểm tra coupon 1 lần duy nhất cho tất cả các tháng
         let coupon = null;
         if (couponId) {
-            coupon = await Coupon.findByPk(couponId);
+            coupon = await Coupon.findByPk(couponId, { transaction });
             if (!coupon) {
                 throw new Error('Coupon not found');
             }
@@ -303,31 +311,32 @@ const payTuitionFeesMultiple = async ({
         );
 
         // 6. Kiểm tra số dư 1 lần — nếu thiếu rollback toàn bộ
-        if (parent.balance < totalAmount) {
+        if (Number(parent.balance) < totalAmount) {
             throw new Error(
                 `Insufficient balance. Required: ${totalAmount}, Available: ${parent.balance}`
             );
         }
 
         // 7. Trừ tiền
-        parent.balance -= totalAmount;
+        parent.balance = Number(parent.balance) - totalAmount;
         await parent.save({ transaction });
 
         // 8. Tạo TuitionFee records cho tất cả tháng
         await TuitionFee.bulkCreate(
             allItems.map(item => ({
-                student_id:                 item.student_id,
-                class_id:                   item.class_id,
-                the_first_of_the_month:     dayjs().year(item.year).month(item.month - 1).startOf('month').format('YYYY-MM-DD'),
-                the_end_of_the_month:       dayjs().year(item.year).month(item.month - 1).endOf('month').format('YYYY-MM-DD'),
-                total_reality_lessons:      item.total_reality_lessons,
-                actual_listed_tuition_fee:  item.actual_listed_tuition_fee,
-                coupon_id:                  item.coupon_id,
-                have_student_paid:          true
+                student_id: item.student_id,
+                class_id: item.class_id,
+                the_first_of_the_month: dayjs().year(item.year).month(item.month - 1).startOf('month').format('YYYY-MM-DD'),
+                the_end_of_the_month: dayjs().year(item.year).month(item.month - 1).endOf('month').format('YYYY-MM-DD'),
+                total_reality_lessons: item.total_reality_lessons,
+                actual_listed_tuition_fee: item.actual_listed_tuition_fee,
+                coupon_id: item.coupon_id,
+                have_student_paid: true
             })),
-            { transaction,
-                ignoreDuplicates: true 
-             }
+            {
+                transaction,
+                ignoreDuplicates: true
+            }
         );
 
         await transaction.commit();

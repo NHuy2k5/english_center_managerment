@@ -5,7 +5,7 @@ const getLessonsController = async (req, res) => {
         const classID = Number(req.params.classID);
         const query = req.queryOptions;
         query.lesson.where = {
-            ...query.class.where,
+            ...query.lesson.where,
             class_id: classID
         }
         const {status, ...result} = await getLessons(query);

@@ -54,17 +54,27 @@ module.exports = {
 
             if (role === 'student') {
                 profileResult = await getStudent(id);
+                // const {studentData} = profileResult.data;
+                profileResult = profileResult.data;
             } else if (role === 'teacher') {
                 profileResult = await getTeacher(id);
+                const {description, thumbnail_link, thumbnail_id, ...teacherData} = profileResult.data;
+                profileResult = teacherData;
+                console.log(teacherData);
+                console.log(profileResult);
             } else if (role === 'parent') {
                 profileResult = await getParent(id);
+                profileResult = profileResult.data;
             } else if (role === 'admin') {
                 profileResult = await getAdmin(id);
+                const {config, ...adminData} = profileResult.data;
+                profileResult = adminData;
             }
             return res.status(200).json({
                 data: {
-                    user: req.user,
-                    profile: profileResult?.data || null
+                    role: req?.user?.role || null,
+                    // profile: profileResult?.data || null
+                    profile: profileResult
                 }
             });
 

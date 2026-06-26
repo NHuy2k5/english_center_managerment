@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const { User } = require('../models/index');
+const { User, UserRole, Role } = require('../models/index');
 
 const optionalAuthenticate = async (req, res, next) => {
     try {
@@ -14,9 +14,20 @@ const optionalAuthenticate = async (req, res, next) => {
         const token = authHeader.split(' ')[1];
         const payload = jwt.verify(token, process.env.ACCESS_SECRET);
         const user = await User.findByPk(payload.id);
-
-        req.user = user || null;
-        next();
+        const userRole = await UserRole.findOne({
+            where: { user_id: user.id },
+            include: [{
+                model: Role,
+                attributes: ['name']
+            }]
+        });
+        const userData = user.toJSON();
+        req.user = {
+            ...userData,
+            role: userRole?.Role?.name || null
+        };
+        console.log(`-------------${req.user.role}---------`)
+        return next();
 
     } catch (err) {
         // Token lỗi hoặc hết hạn → coi như guest

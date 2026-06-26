@@ -5,7 +5,7 @@ exports.transformAttendance = (attendance) => {
         lesson_name: data.name,
         start: data.start,
         end: data.end,
-        students: data.StudentLesson.map(sl => ({
+        students: data.StudentLessons.map(sl => ({
             student_id: sl.Student.id,
             full_name: sl.Student.student_user.full_name,
             status: sl.status

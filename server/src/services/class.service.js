@@ -11,8 +11,9 @@ const {
     Lesson,
     TuitionFee,
     StudentLesson,
-    DataTypes,
-    sequelize } = require("../models/index");
+    sequelize,
+    Sequelize } = require("../models/index");
+const DataTypes  = Sequelize;
 const { transformClass } = require('../transformers/class.transformer');
 const buildComputedAttributes = require('../utilities/build-field');
 const buildOrder = require('../utilities/build-order');

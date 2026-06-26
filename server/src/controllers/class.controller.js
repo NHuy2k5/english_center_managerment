@@ -4,8 +4,8 @@ const getClassesController = async (req, res) => {
     try {
         const courseID = Number(req.params.courseID);
         const query = req.queryOptions;
-        query.class.where = {
-            ...query.class.where,
+        query.cLass.where = {
+            ...query.cLass.where,
             course_id: courseID
         }
         const {status, ...result} = await getClasss(query);
@@ -78,7 +78,7 @@ const addToClass = async (req, res) => {
         } 
         */
         const classID = Number(req.params.classID);
-        if(!data.user){
+        if(!data.user_id){
             return res.status(400).json({
                 message: 'user_id is required'
             });

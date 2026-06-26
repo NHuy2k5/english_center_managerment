@@ -13,7 +13,6 @@ const { transformScheduleStudent } = require('../transformers/scheduleStudent.tr
 const { getAssignments } = require("./assignment.service");
 const studentLessonInclude = [
     {
-        paranoid: false,
         model: Student,
         required: true,
         attributes: ['id'],
@@ -34,6 +33,7 @@ const studentLessonInclude = [
             }
             , {
                 model: Assignment,
+                as: 'assignments',
                 attributes: ['teacher_id'],
                 required: false,
                 include: [{
@@ -151,6 +151,7 @@ module.exports = {
                 }
 
                 rows = await StudentLesson.findAll({
+                    paranoid: false,
                     where: {
                         student_id: userID
                     },

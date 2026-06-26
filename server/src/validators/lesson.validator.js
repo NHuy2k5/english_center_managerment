@@ -18,7 +18,7 @@ const updateLessonSchema = object({
         start: date(),
         end: date(),
         description: string(),
-        listed_price: number().test('check-value-price', 'Total price must be greater or equal 0', (value) => value >= 0),
+        listed_price: number().notRequired().test('check-value-price', 'Total price must be greater or equal 0', (value) => value === undefined || value >= 0),
         address: string(),
         class_id: number(),
         status: string().oneOf(['not_canceled', 'canceled'], 'Status of class must be not_canceled, canceled')

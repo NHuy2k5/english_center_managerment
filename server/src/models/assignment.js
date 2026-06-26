@@ -15,7 +15,8 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: 'teacher_id'
       });
       Assignment.belongsTo(models.Lesson, {
-        foreignKey: 'lesson_id'
+        foreignKey: 'lesson_id',
+        as: 'assignment_lesson'
       });
     }
   }
