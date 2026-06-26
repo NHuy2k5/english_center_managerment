@@ -51,11 +51,11 @@ const generateMonthlyTeacherSalary = async ({
             'teacher_id',
 
             [
-                fn('COUNT',col('Lessons.id')),'total_lessons'
+                fn('COUNT',col('assignment_lesson.id')),'total_lessons'
             ],
 
             [
-                literal(`COUNT(Lessons.id) * Assignment.pay_per_lesson`),
+                literal(`COUNT(assignment_lesson.id) * Assignment.pay_per_lesson`),
                 'salary'
             ]
         ],
@@ -63,6 +63,7 @@ const generateMonthlyTeacherSalary = async ({
         include: [
             {
                 model: Lesson,
+                as: 'assignment_lesson',
                 attributes: [],
                 required: true,
 
@@ -289,7 +290,8 @@ const payTeacherSalary = async (
 
         for (const teacher of teachers) {
 
-            teacher.balance +=
+            teacher.balance =
+                Number(teacher.balance) +
                 teacherBalanceMap.get(
                     teacher.id
                 );

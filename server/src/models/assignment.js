@@ -46,7 +46,7 @@ module.exports = (sequelize, DataTypes) => {
     status: {
       allowNull: false,
       type: DataTypes.STRING(30),
-      defaultValue: 'main_teach'
+      defaultValue: 'teaching'
     },
     pay_per_lesson: {
       allowNull: false,

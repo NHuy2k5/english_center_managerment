@@ -74,13 +74,17 @@ const calculateTuitionAggregate = async ({
                         start: {
                             [Op.gte]: startDate,
                             [Op.lte]: Sequelize.literal(
-                                `
-                                CASE
-                                WHEN \`StudentClass\`.\`left_at\` IS NOT NULL
-                                THEN \`StudentClass\`.\`left_at\`
-                                ELSE '${dayjs(endDate).format('YYYY-MM-DD HH:mm:ss')}'
-                                END
-                                `
+                                `COALESCE(
+                                    (
+                                        SELECT sc.left_at 
+                                        FROM student_class sc 
+                                        WHERE sc.student_id = \`StudentLesson\`.\`student_id\`
+                                        AND sc.class_id = \`Lesson\`.\`class_id\`
+                                        AND sc.left_at IS NOT NULL
+                                        LIMIT 1
+                                    ),
+                                    '${endDate.toISOString().slice(0, 19).replace('T', ' ')}'
+                                )`
                             )
                         }
 
@@ -102,28 +106,28 @@ const calculateTuitionAggregate = async ({
                         as: 'student_user',
                         attributes: []
                     },
-                    {
-                        model: StudentClass,
+                    // {
+                    //     model: StudentClass,
 
-                        where: {
-                            class_id: {
-                                [Op.col]:
-                                    "Lesson.class_id"
-                            },
-                            [Op.or]: [
-                                {
-                                    left_at: null,
+                    //     where: {
+                    //         class_id: {
+                    //             [Op.col]:
+                    //                 "Lesson.class_id"
+                    //         },
+                    //         [Op.or]: [
+                    //             {
+                    //                 left_at: null,
 
-                                },
-                                Sequelize.where(
-                                    Sequelize.col("Lesson.start"),
-                                    Op.lte,
-                                    Sequelize.col("StudentClasses.left_at")
-                                )
-                            ]
-                        },
-                        attributes: ["left_at"]
-                    }
+                    //             },
+                    //             Sequelize.where(
+                    //                 Sequelize.col("Lesson.start"),
+                    //                 Op.lte,
+                    //                 Sequelize.col("Student->StudentClasses.left_at")
+                    //             )
+                    //         ]
+                    //     },
+                    //     attributes: ["left_at"]
+                    // }
                     ]
 
                 },
@@ -147,7 +151,7 @@ const calculateTuitionAggregate = async ({
                     "total_reality_lessons"
                 ],
                 [
-                    Sequelize.fn("SUM", Sequelize.literal("`lessons`.`listed_price`")),
+                    Sequelize.fn("SUM", Sequelize.literal("`Lesson`.`listed_price`")),
                     "actual_listed_tuition_fee"
                 ],
             ],
@@ -159,10 +163,10 @@ const calculateTuitionAggregate = async ({
                 // "Student->student_user.full_name",
                 // "Lesson.class_id",
                 // "Lesson->Class.id"
-                Sequelize.literal("`student_lesson`.`student_id`"),
-                Sequelize.literal("`students`.`id`"),
+                Sequelize.literal("`StudentLesson`.`student_id`"),
+                Sequelize.literal("`Student`.`id`"),
                 Sequelize.literal("`Student->student_user`.`full_name`"),
-                Sequelize.literal("`lessons`.`class_id`"),
+                Sequelize.literal("`Lesson`.`class_id`"),
                 Sequelize.literal("`Lesson->Class`.`id`")
             ]
         });
